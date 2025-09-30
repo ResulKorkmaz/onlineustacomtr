@@ -68,7 +68,7 @@ export default async function Navbar() {
                   Giriş Yap
                 </Button>
               </Link>
-              <Link href="/onboarding">
+              <Link href="/register">
                 <Button size="sm" className="bg-white text-sky-600 hover:bg-sky-50">Kayıt Ol</Button>
               </Link>
             </>

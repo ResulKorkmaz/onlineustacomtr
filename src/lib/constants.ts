@@ -171,3 +171,70 @@ export const SOCIAL_LINKS = {
   instagram: "https://instagram.com/onlineusta",
   linkedin: "https://linkedin.com/company/onlineusta",
 } as const;
+
+// Hizmet Kategorileri
+export const SERVICE_CATEGORIES = [
+  { id: "elektrik", name: "Elektrikçi", icon: "⚡" },
+  { id: "tesisat", name: "Tesisatçı", icon: "🔧" },
+  { id: "boyaci", name: "Boyacı", icon: "🎨" },
+  { id: "marangoz", name: "Marangoz", icon: "🪚" },
+  { id: "klima", name: "Klima Teknik Servisi", icon: "❄️" },
+  { id: "asansor", name: "Asansör Teknik Servisi", icon: "🛗" },
+  { id: "temizlik", name: "Temizlik", icon: "🧹" },
+  { id: "nakliyat", name: "Nakliyat", icon: "🚚" },
+  { id: "bahce", name: "Bahçe Bakımı", icon: "🌱" },
+  { id: "cam", name: "Cam Balkon", icon: "🪟" },
+  { id: "demir", name: "Demirci", icon: "⚒️" },
+  { id: "dogalgaz", name: "Doğalgaz Teknik Servisi", icon: "🔥" },
+  { id: "fayans", name: "Fayans Ustası", icon: "🧱" },
+  { id: "mobilya", name: "Mobilya Montaj", icon: "🪑" },
+  { id: "perde", name: "Perde Montaj", icon: "🪟" },
+  { id: "beyaz-esya", name: "Beyaz Eşya Servisi", icon: "🔌" },
+  { id: "bilgisayar", name: "Bilgisayar Teknik Servisi", icon: "💻" },
+  { id: "uydu", name: "Uydu Sistemleri", icon: "📡" },
+  { id: "anahtar", name: "Anahtarcı", icon: "🔑" },
+  { id: "cam-filmi", name: "Cam Filmi", icon: "🎬" },
+] as const;
+
+// İl-İlçe verileri (örnek olarak bazı iller)
+export const DISTRICTS: Record<string, string[]> = {
+  "İstanbul": [
+    "Adalar", "Arnavutköy", "Ataşehir", "Avcılar", "Bağcılar", "Bahçelievler", "Bakırköy",
+    "Başakşehir", "Bayrampaşa", "Beşiktaş", "Beykoz", "Beylikdüzü", "Beyoğlu", "Büyükçekmece",
+    "Çatalca", "Çekmeköy", "Esenler", "Esenyurt", "Eyüpsultan", "Fatih", "Gaziosmanpaşa",
+    "Güngören", "Kadıköy", "Kağıthane", "Kartal", "Küçükçekmece", "Maltepe", "Pendik",
+    "Sancaktepe", "Sarıyer", "Silivri", "Sultanbeyli", "Sultangazi", "Şile", "Şişli",
+    "Tuzla", "Ümraniye", "Üsküdar", "Zeytinburnu"
+  ],
+  "Ankara": [
+    "Akyurt", "Altındağ", "Ayaş", "Bala", "Beypazarı", "Çamlıdere", "Çankaya", "Çubuk",
+    "Elmadağ", "Etimesgut", "Evren", "Gölbaşı", "Güdül", "Haymana", "Kahramankazan",
+    "Kalecik", "Keçiören", "Kızılcahamam", "Mamak", "Nallıhan", "Polatlı", "Pursaklar",
+    "Sincan", "Şereflikoçhisar", "Yenimahalle"
+  ],
+  "İzmir": [
+    "Aliağa", "Balçova", "Bayındır", "Bayraklı", "Bergama", "Beydağ", "Bornova", "Buca",
+    "Çeşme", "Çiğli", "Dikili", "Foça", "Gaziemir", "Güzelbahçe", "Karabağlar", "Karaburun",
+    "Karşıyaka", "Kemalpaşa", "Kınık", "Kiraz", "Konak", "Menderes", "Menemen", "Narlıdere",
+    "Ödemiş", "Seferihisar", "Selçuk", "Tire", "Torbalı", "Urla"
+  ],
+  "Antalya": [
+    "Akseki", "Aksu", "Alanya", "Demre", "Döşemealtı", "Elmalı", "Finike", "Gazipaşa",
+    "Gündoğmuş", "İbradı", "Kaş", "Kemer", "Kepez", "Konyaaltı", "Korkuteli", "Kumluca",
+    "Manavgat", "Muratpaşa", "Serik"
+  ],
+  "Bursa": [
+    "Büyükorhan", "Gemlik", "Gürsu", "Harmancık", "İnegöl", "İznik", "Karacabey", "Keles",
+    "Kestel", "Mudanya", "Mustafakemalpaşa", "Nilüfer", "Orhaneli", "Orhangazi", "Osmangazi",
+    "Yenişehir", "Yıldırım"
+  ],
+  "Adana": ["Aladağ", "Ceyhan", "Çukurova", "Feke", "İmamoğlu", "Karaisalı", "Karataş", "Kozan", "Pozantı", "Saimbeyli", "Sarıçam", "Seyhan", "Tufanbeyli", "Yumurtalık", "Yüreğir"],
+  "Adıyaman": ["Besni", "Çelikhan", "Gerger", "Gölbaşı", "Kahta", "Merkez", "Samsat", "Sincik", "Tut"],
+};
+
+// Diğer illerin ilçeleri için varsayılan (kullanıcı manuel girebilir)
+CITIES.forEach(city => {
+  if (!DISTRICTS[city]) {
+    DISTRICTS[city] = ["Merkez"];
+  }
+});
