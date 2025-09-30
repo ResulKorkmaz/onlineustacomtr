@@ -193,6 +193,13 @@ export default function RegisterPage() {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Kullanıcı oluşturulamadı");
 
+      // Email confirmation kontrolü
+      if (authData.user && !authData.session) {
+        setError("Kayıt başarılı! Lütfen e-postanızı kontrol edip onay linkine tıklayın.");
+        setLoading(false);
+        return;
+      }
+
       // 2. Belge yükleme (şirket ise)
       let documentUrl = null;
       if (formData.kind === "company" && formData.documentFile) {
