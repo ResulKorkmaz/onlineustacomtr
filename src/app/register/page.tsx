@@ -211,7 +211,7 @@ export default function RegisterPage() {
         }
       }
 
-      // 3. Profil oluşturma
+      // 3. Profil oluşturma (Admin API kullanarak RLS bypass)
       const profileData = {
         id: authData.user.id,
         role: "provider" as const,
@@ -226,23 +226,31 @@ export default function RegisterPage() {
         is_verified: false,
       };
 
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .upsert(profileData);
+      const profileResponse = await fetch("/api/register-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profileData),
+      });
 
-      if (profileError) throw profileError;
+      if (!profileResponse.ok) {
+        const errorData = await profileResponse.json();
+        throw new Error(errorData.error || "Profil oluşturulamadı");
+      }
 
       // 4. Kategorileri kaydet (şahıs ise)
       if (formData.kind === "individual" && formData.categories.length > 0) {
-        // Kategori kaydetme işlemi - şimdilik expertise alanına kaydediyoruz
-        await supabase
-          .from("profiles")
-          .update({ 
-            bio: `${formData.bio}\n\nUzmanlık Alanları: ${formData.expertise}\n\nHizmet Kategorileri: ${formData.categories.map(c => 
-              SERVICE_CATEGORIES.find(cat => cat.id === c)?.name
-            ).join(", ")}`
-          })
-          .eq("id", authData.user.id);
+        const updatedBio = `${formData.bio}\n\nUzmanlık Alanları: ${formData.expertise}\n\nHizmet Kategorileri: ${formData.categories.map(c => 
+          SERVICE_CATEGORIES.find(cat => cat.id === c)?.name
+        ).join(", ")}`;
+        
+        await fetch("/api/register-profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: authData.user.id,
+            bio: updatedBio,
+          }),
+        });
       }
 
       // 5. Başarılı - profil sayfasına yönlendir
