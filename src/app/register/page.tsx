@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { SERVICE_CATEGORIES, CITIES, DISTRICTS } from "@/lib/constants";
-import { Check, ChevronRight, ChevronLeft, Upload, AlertCircle } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Upload, AlertCircle, CheckCircle } from "lucide-react";
 
 type ProviderKind = "individual" | "company" | "";
 type FormData = {
@@ -32,6 +32,7 @@ export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [userExists, setUserExists] = useState(false);
   const router = useRouter();
   const supabase = createClient();
@@ -195,8 +196,13 @@ export default function RegisterPage() {
 
       // Email confirmation kontrolü
       if (authData.user && !authData.session) {
-        setError("Kayıt başarılı! Lütfen e-postanızı kontrol edip onay linkine tıklayın.");
+        setSuccess("Kayıt başarılı! E-postanıza gönderilen onay linkine tıklayarak hesabınızı aktifleştirin. Sonra giriş yapabilirsiniz.");
         setLoading(false);
+        
+        // 3 saniye sonra login sayfasına yönlendir
+        setTimeout(() => {
+          router.push("/login?message=Lütfen e-postanızı onaylayın");
+        }, 4000);
         return;
       }
 
@@ -627,8 +633,20 @@ export default function RegisterPage() {
               </div>
             )}
 
+            {/* Success Message */}
+            {success && (
+              <div className="mt-6 flex items-start gap-2 rounded-lg bg-green-50 p-4 text-green-800 border border-green-200">
+                <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-sm">Kayıt Başarılı!</p>
+                  <p className="text-sm mt-1">{success}</p>
+                  <p className="text-xs mt-2 text-green-700">Giriş sayfasına yönlendiriliyorsunuz...</p>
+                </div>
+              </div>
+            )}
+
             {/* Error Message */}
-            {error && (
+            {error && !success && (
               <div className="mt-6 flex items-start gap-2 rounded-lg bg-red-50 p-4 text-red-800">
                 <AlertCircle className="h-5 w-5 flex-shrink-0" />
                 <p className="text-sm">{error}</p>
