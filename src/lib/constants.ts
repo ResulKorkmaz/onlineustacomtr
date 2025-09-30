@@ -229,12 +229,5 @@ export const DISTRICTS: Record<string, string[]> = {
     "Yenişehir", "Yıldırım"
   ],
   "Adana": ["Aladağ", "Ceyhan", "Çukurova", "Feke", "İmamoğlu", "Karaisalı", "Karataş", "Kozan", "Pozantı", "Saimbeyli", "Sarıçam", "Seyhan", "Tufanbeyli", "Yumurtalık", "Yüreğir"],
-  "Adıyaman": ["Besni", "Çelikhan", "Gerger", "Gölbaşı", "Kahta", "Merkez", "Samsat", "Sincik", "Tut"],
+  "Adıyaman": ["Besni", "Çelikhan", "Gerger", "Gölbaşı", "Kahta", "Samsat", "Sincik", "Tut"],
 };
-
-// Diğer illerin ilçeleri için varsayılan (kullanıcı manuel girebilir)
-CITIES.forEach(city => {
-  if (!DISTRICTS[city]) {
-    DISTRICTS[city] = ["Merkez"];
-  }
-});

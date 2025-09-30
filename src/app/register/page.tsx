@@ -514,12 +514,18 @@ export default function RegisterPage() {
                       onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                     >
                       <option value="">İlçe Seçin</option>
-                      {DISTRICTS[formData.city]?.map((district) => (
+                      <option value="Merkez">Merkez</option>
+                      {DISTRICTS[formData.city] && DISTRICTS[formData.city].filter(d => d !== "Merkez").map((district) => (
                         <option key={district} value={district}>
                           {district}
                         </option>
                       ))}
                     </Select>
+                    {formData.city && !DISTRICTS[formData.city]?.length && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        Bu il için detaylı ilçe listesi henüz eklenmemiş, "Merkez" seçebilirsiniz.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
