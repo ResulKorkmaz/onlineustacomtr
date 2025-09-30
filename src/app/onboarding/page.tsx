@@ -17,6 +17,7 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     checkProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function checkProfile() {
@@ -50,7 +51,7 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const updates: any = { role };
+    const updates: { role: string; provider_kind?: string } = { role };
     if (role === "provider") {
       updates.provider_kind = kind;
     }

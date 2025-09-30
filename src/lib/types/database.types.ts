@@ -106,7 +106,7 @@ export interface Notification {
   type: NotificationType;
   title: string;
   message: string;
-  payload: Record<string, any> | null;
+  payload: Record<string, unknown> | null;
   link_url: string | null;
   is_read: boolean;
   is_sent_email: boolean;
