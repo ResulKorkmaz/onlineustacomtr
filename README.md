@@ -130,3 +130,22 @@ MIT License - detaylar için [LICENSE](LICENSE) dosyasına bakın.
 <div align="center">
 Made with ❤️ in Turkey
 </div>
+
+---
+
+## 🚀 Production Deploy
+
+**Live URL:** Coming soon...
+
+### Environment Variables (Configured):
+- ✅ NEXT_PUBLIC_SUPABASE_URL
+- ✅ NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+### Database:
+- ✅ Supabase Project: zqvdnujpbbrwhnsylgmq
+- ✅ Region: US East (North Virginia)
+- ✅ Tables: profiles, jobs, bids, notifications
+- ✅ RLS Policies: Active
+- ✅ Triggers: Active (Daily limits)
+
+---
