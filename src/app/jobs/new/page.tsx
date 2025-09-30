@@ -17,8 +17,8 @@ const schema = z.object({
   description: z.string().min(LIMITS.JOB_DESCRIPTION_MIN).max(LIMITS.JOB_DESCRIPTION_MAX),
   city: z.string().min(1, "Şehir seçiniz"),
   district: z.string().optional(),
-  budget_min: z.coerce.number().optional(),
-  budget_max: z.coerce.number().optional(),
+  budget_min: z.number().optional(),
+  budget_max: z.number().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
