@@ -24,25 +24,43 @@ export default function OnboardingPage() {
   }, []);
 
   async function checkAuth() {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (user) {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        // Giriş yapılmamış - direkt devam et
+        setIsCheckingAuth(false);
+        return;
+      }
+
       setIsAuthenticated(true);
-      // Profil var mı kontrol et
-      const { data: profile } = await supabase
+      
+      // Profil var mı kontrol et (timeout ile)
+      const profilePromise = supabase
         .from("profiles")
-        .select("*")
+        .select("role, provider_kind")
         .eq("id", user.id)
         .single();
 
-      if (profile && profile.role) {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Timeout")), 3000)
+      );
+
+      const { data: profile } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]).catch(() => ({ data: null })) as { data: { role?: string } | null };
+
+      if (profile?.role) {
         // Profil tamamsa dashboard'a yönlendir
         router.push("/dashboard");
         return;
       }
+    } catch (err) {
+      console.error("Auth check error:", err);
+    } finally {
+      setIsCheckingAuth(false);
     }
-    
-    setIsCheckingAuth(false);
   }
 
   async function handleSubmit() {
