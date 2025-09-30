@@ -1,18 +1,23 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState<"customer" | "provider">("customer");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
   const [error, setError] = useState("");
   const supabase = createClient();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const redirect = searchParams.get("redirect");
 
   useEffect(() => {
@@ -24,24 +29,51 @@ function LoginForm() {
     }
   }, [redirect]);
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handlePasswordReset(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const redirectPath = redirect === "onboarding" ? "/onboarding" : "/dashboard";
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirectPath}`,
-      },
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?redirect=/dashboard`,
     });
 
     if (error) {
       setError(error.message);
     } else {
       setSent(true);
+    }
+    
+    setLoading(false);
+  }
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    // Şifre sıfırlama modundaysa
+    if (resetMode) {
+      return handlePasswordReset(e);
+    }
+
+    // Normal giriş ise user type'ı kaydet
+    if (redirect !== "onboarding") {
+      localStorage.setItem("onboarding_role", userType);
+    }
+
+    const redirectPath = redirect === "onboarding" ? "/onboarding" : "/dashboard";
+
+    // E-posta ve şifre ile giriş
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      router.push(redirectPath);
     }
     
     setLoading(false);
@@ -54,9 +86,16 @@ function LoginForm() {
           <div className="mb-4 text-4xl">📧</div>
           <h2 className="mb-2 text-2xl font-bold">E-posta Gönderildi</h2>
           <p className="text-gray-600">
-            <strong>{email}</strong> adresine giriş bağlantısı gönderdik.
+            <strong>{email}</strong> adresine şifre sıfırlama bağlantısı gönderdik.
             Lütfen e-postanızı kontrol edin.
           </p>
+          <Button 
+            onClick={() => { setSent(false); setResetMode(false); }} 
+            variant="ghost" 
+            className="mt-4"
+          >
+            Geri Dön
+          </Button>
         </div>
       </div>
     );
@@ -65,7 +104,9 @@ function LoginForm() {
   return (
     <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border bg-white p-8 shadow-sm">
-        <h1 className="mb-2 text-2xl font-bold">Giriş Yap / Kayıt Ol</h1>
+        <h1 className="mb-6 text-2xl font-bold">
+          {redirect === "onboarding" ? "Kayıt Ol" : resetMode ? "Şifre Sıfırlama" : "Giriş Yap"}
+        </h1>
         
         {redirect === "onboarding" && (
           <div className="mb-6 rounded-lg bg-sky-50 p-4">
@@ -74,8 +115,46 @@ function LoginForm() {
             </p>
           </div>
         )}
+
+        {resetMode && (
+          <p className="mb-6 text-sm text-gray-600">
+            E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
+          </p>
+        )}
         
         <form onSubmit={handleLogin} className="space-y-4">
+          {!resetMode && redirect !== "onboarding" && (
+            <div>
+              <label className="mb-3 block text-sm font-medium">Giriş Türü</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setUserType("customer")}
+                  className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
+                    userType === "customer"
+                      ? "border-sky-500 bg-sky-50 text-sky-900"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                  }`}
+                >
+                  <span className="text-2xl">👤</span>
+                  <span className="text-sm font-medium">Müşteri</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUserType("provider")}
+                  className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
+                    userType === "provider"
+                      ? "border-sky-500 bg-sky-50 text-sky-900"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                  }`}
+                >
+                  <span className="text-2xl">🔧</span>
+                  <span className="text-sm font-medium">Hizmet Veren</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="mb-2 block text-sm font-medium">E-posta Adresi</label>
             <Input
@@ -88,14 +167,61 @@ function LoginForm() {
             />
           </div>
 
+          {!resetMode && (
+            <div>
+              <label className="mb-2 block text-sm font-medium">Şifre</label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required={!resetMode}
+              />
+            </div>
+          )}
+
+          {!resetMode && redirect !== "onboarding" && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setResetMode(true)}
+                className="text-sm text-sky-600 hover:text-sky-700 hover:underline"
+              >
+                Şifremi Unuttum
+              </button>
+            </div>
+          )}
+
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Gönderiliyor..." : "Giriş Bağlantısı Gönder"}
+            {loading 
+              ? "İşleniyor..." 
+              : resetMode 
+                ? "Sıfırlama Bağlantısı Gönder" 
+                : redirect === "onboarding" 
+                  ? "Kayıt Ol" 
+                  : "Giriş Yap"
+            }
           </Button>
+
+          {resetMode && (
+            <button
+              type="button"
+              onClick={() => setResetMode(false)}
+              className="w-full text-sm text-gray-600 hover:text-gray-700"
+            >
+              Giriş sayfasına dön
+            </button>
+          )}
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          E-posta adresinize gönderilecek bağlantı ile güvenli giriş yapabilirsiniz.
-        </p>
+        {!resetMode && redirect !== "onboarding" && (
+          <p className="mt-6 text-center text-sm text-gray-600">
+            Hesabınız yok mu?{" "}
+            <Link href="/onboarding" className="font-medium text-sky-600 hover:text-sky-700 hover:underline">
+              Kayıt Ol
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );
