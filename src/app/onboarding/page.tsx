@@ -9,7 +9,7 @@ type Role = "customer" | "provider" | "";
 type Kind = "individual" | "company" | "";
 
 export default function OnboardingPage() {
-  const [role, setRole] = useState<Role>("");
+  const [role] = useState<Role>("provider"); // Sabit: Hizmet Veren
   const [kind, setKind] = useState<Kind>("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -64,7 +64,7 @@ export default function OnboardingPage() {
   }
 
   async function handleSubmit() {
-    if (!role || (role === "provider" && !kind)) return;
+    if (!kind) return;
     
     setLoading(true);
 
@@ -72,19 +72,17 @@ export default function OnboardingPage() {
     
     if (!user) {
       // Kullanıcı giriş yapmamışsa, seçimleri localStorage'a kaydet ve login'e yönlendir
-      localStorage.setItem("onboarding_role", role);
-      if (role === "provider" && kind) {
-        localStorage.setItem("onboarding_kind", kind);
-      }
+      localStorage.setItem("onboarding_role", "provider");
+      localStorage.setItem("onboarding_kind", kind);
       router.push("/login?redirect=onboarding");
       return;
     }
 
     // Kullanıcı giriş yapmışsa profili güncelle
-    const updates: { role: string; provider_kind?: string } = { role };
-    if (role === "provider") {
-      updates.provider_kind = kind;
-    }
+    const updates = { 
+      role: "provider" as const, 
+      provider_kind: kind 
+    };
 
     const { error } = await supabase
       .from("profiles")
@@ -100,11 +98,9 @@ export default function OnboardingPage() {
     setLoading(false);
   }
 
-  // localStorage'dan seçimleri yükle
+  // localStorage'dan hizmet veren tipi yükle
   useEffect(() => {
-    const savedRole = localStorage.getItem("onboarding_role");
     const savedKind = localStorage.getItem("onboarding_kind");
-    if (savedRole) setRole(savedRole as Role);
     if (savedKind) setKind(savedKind as Kind);
   }, []);
 
@@ -122,84 +118,51 @@ export default function OnboardingPage() {
   return (
     <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4 py-12">
       <div className="w-full max-w-2xl rounded-2xl border bg-white p-8 shadow-sm">
-        <h1 className="mb-6 text-2xl font-bold">
+        <h1 className="mb-2 text-2xl font-bold">
           {isAuthenticated ? "Profilinizi Tamamlayın" : "Hizmet Veren Olarak Katılın"}
         </h1>
         <p className="mb-8 text-gray-600">
           {isAuthenticated 
-            ? "Platformu kullanmaya başlamak için lütfen aşağıdaki bilgileri seçin."
-            : "Önce rolünüzü seçin, ardından güvenli giriş yaparak kayıt işleminizi tamamlayın."
+            ? "Hizmet veren tipinizi seçerek devam edin."
+            : "Hizmet veren tipinizi seçin, ardından güvenli giriş yaparak kayıt işleminizi tamamlayın."
           }
         </p>
 
         <div className="space-y-6">
           <div>
-            <label className="mb-3 block font-medium">Rolünüzü Seçin</label>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <label className="mb-3 block text-lg font-medium">Hizmet Veren Tipinizi Seçin</label>
+            <div className="grid gap-4 sm:grid-cols-2">
               <button
-                onClick={() => setRole("customer")}
+                onClick={() => setKind("individual")}
                 className={`rounded-lg border-2 p-6 text-left transition ${
-                  role === "customer"
+                  kind === "individual"
                     ? "border-sky-500 bg-sky-50"
-                    : "border-gray-300 hover:border-gray-300"
+                    : "border-gray-300 hover:border-gray-400"
                 }`}
               >
-                <div className="mb-2 text-2xl">👤</div>
-                <h3 className="font-semibold">Müşteri</h3>
-                <p className="text-sm text-gray-600">İlan oluşturup teklif alacağım</p>
+                <div className="mb-3 text-4xl">👨‍🔧</div>
+                <h3 className="mb-1 text-lg font-semibold">Şahıs</h3>
+                <p className="text-sm text-gray-600">Bireysel çalışıyorum</p>
               </button>
 
               <button
-                onClick={() => setRole("provider")}
+                onClick={() => setKind("company")}
                 className={`rounded-lg border-2 p-6 text-left transition ${
-                  role === "provider"
+                  kind === "company"
                     ? "border-sky-500 bg-sky-50"
-                    : "border-gray-300 hover:border-gray-300"
+                    : "border-gray-300 hover:border-gray-400"
                 }`}
               >
-                <div className="mb-2 text-2xl">🔧</div>
-                <h3 className="font-semibold">Hizmet Veren</h3>
-                <p className="text-sm text-gray-600">İlanları görüp teklif vereceğim</p>
+                <div className="mb-3 text-4xl">🏢</div>
+                <h3 className="mb-1 text-lg font-semibold">Şirket</h3>
+                <p className="text-sm text-gray-600">Şirket olarak hizmet veriyorum</p>
               </button>
             </div>
           </div>
 
-          {role === "provider" && (
-            <div>
-              <label className="mb-3 block font-medium">Hizmet Veren Tipi</label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <button
-                  onClick={() => setKind("individual")}
-                  className={`rounded-lg border-2 p-6 text-left transition ${
-                    kind === "individual"
-                      ? "border-sky-500 bg-sky-50"
-                      : "border-gray-300 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="mb-2 text-2xl">👨‍🔧</div>
-                  <h3 className="font-semibold">Şahıs</h3>
-                  <p className="text-sm text-gray-600">Bireysel çalışıyorum</p>
-                </button>
-
-                <button
-                  onClick={() => setKind("company")}
-                  className={`rounded-lg border-2 p-6 text-left transition ${
-                    kind === "company"
-                      ? "border-sky-500 bg-sky-50"
-                      : "border-gray-300 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="mb-2 text-2xl">🏢</div>
-                  <h3 className="font-semibold">Şirket</h3>
-                  <p className="text-sm text-gray-600">Şirket olarak hizmet veriyorum</p>
-                </button>
-              </div>
-            </div>
-          )}
-
           <Button
             onClick={handleSubmit}
-            disabled={!role || (role === "provider" && !kind) || loading}
+            disabled={!kind || loading}
             className="w-full"
             size="lg"
           >
@@ -207,14 +170,25 @@ export default function OnboardingPage() {
               ? "İşlem yapılıyor..." 
               : isAuthenticated 
                 ? "Profili Tamamla" 
-                : "Giriş Yap / Kayıt Ol"
+                : "Devam Et (Giriş Yap / Kayıt Ol)"
             }
           </Button>
 
           {!isAuthenticated && (
-            <p className="mt-4 text-center text-sm text-gray-500">
-              Seçimlerinizi yaptıktan sonra e-posta ile güvenli giriş yapabilirsiniz.
-            </p>
+            <div className="mt-6 space-y-3">
+              <p className="text-center text-sm text-gray-500">
+                Seçiminizi yaptıktan sonra e-posta ile güvenli giriş yapabilirsiniz.
+              </p>
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <span className="text-gray-500">Müşteri misiniz?</span>
+                <a 
+                  href="/login?type=customer" 
+                  className="font-medium text-sky-600 hover:text-sky-700 hover:underline"
+                >
+                  Müşteri Olarak Kayıt Ol
+                </a>
+              </div>
+            </div>
           )}
         </div>
       </div>
