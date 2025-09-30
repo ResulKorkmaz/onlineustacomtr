@@ -15,42 +15,54 @@ export default function OnboardingPage() {
   const router = useRouter();
   const supabase = createClient();
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
   useEffect(() => {
-    checkProfile();
+    checkAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function checkProfile() {
+  async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/login");
-      return;
-    }
+    
+    if (user) {
+      setIsAuthenticated(true);
+      // Profil var mı kontrol et
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    if (profile) {
-      // Profil varsa dashboard'a yönlendir
-      router.push("/dashboard");
-    } else {
-      // Profil yoksa oluştur (placeholder)
-      await supabase.from("profiles").insert({
-        id: user.id,
-        role: "customer",
-      });
+      if (profile && profile.role) {
+        // Profil tamamsa dashboard'a yönlendir
+        router.push("/dashboard");
+        return;
+      }
     }
+    
+    setIsCheckingAuth(false);
   }
 
   async function handleSubmit() {
+    if (!role || (role === "provider" && !kind)) return;
+    
     setLoading(true);
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    
+    if (!user) {
+      // Kullanıcı giriş yapmamışsa, seçimleri localStorage'a kaydet ve login'e yönlendir
+      localStorage.setItem("onboarding_role", role);
+      if (role === "provider" && kind) {
+        localStorage.setItem("onboarding_kind", kind);
+      }
+      router.push("/login?redirect=onboarding");
+      return;
+    }
 
+    // Kullanıcı giriş yapmışsa profili güncelle
     const updates: { role: string; provider_kind?: string } = { role };
     if (role === "provider") {
       updates.provider_kind = kind;
@@ -58,22 +70,48 @@ export default function OnboardingPage() {
 
     const { error } = await supabase
       .from("profiles")
-      .update(updates)
+      .upsert({ id: user.id, ...updates })
       .eq("id", user.id);
 
     if (!error) {
+      localStorage.removeItem("onboarding_role");
+      localStorage.removeItem("onboarding_kind");
       router.push("/dashboard");
     }
 
     setLoading(false);
   }
 
+  // localStorage'dan seçimleri yükle
+  useEffect(() => {
+    const savedRole = localStorage.getItem("onboarding_role");
+    const savedKind = localStorage.getItem("onboarding_kind");
+    if (savedRole) setRole(savedRole as Role);
+    if (savedKind) setKind(savedKind as Kind);
+  }, []);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
+        <div className="text-center">
+          <div className="mb-4 text-4xl">⏳</div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
+    <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4 py-12">
       <div className="w-full max-w-2xl rounded-2xl border bg-white p-8 shadow-sm">
-        <h1 className="mb-6 text-2xl font-bold">Hoş Geldiniz!</h1>
+        <h1 className="mb-6 text-2xl font-bold">
+          {isAuthenticated ? "Profilinizi Tamamlayın" : "Hizmet Veren Olarak Katılın"}
+        </h1>
         <p className="mb-8 text-gray-600">
-          Platformu kullanmaya başlamak için lütfen aşağıdaki bilgileri seçin.
+          {isAuthenticated 
+            ? "Platformu kullanmaya başlamak için lütfen aşağıdaki bilgileri seçin."
+            : "Önce rolünüzü seçin, ardından güvenli giriş yaparak kayıt işleminizi tamamlayın."
+          }
         </p>
 
         <div className="space-y-6">
@@ -145,9 +183,21 @@ export default function OnboardingPage() {
             onClick={handleSubmit}
             disabled={!role || (role === "provider" && !kind) || loading}
             className="w-full"
+            size="lg"
           >
-            {loading ? "Kaydediliyor..." : "Devam Et"}
+            {loading 
+              ? "İşlem yapılıyor..." 
+              : isAuthenticated 
+                ? "Profili Tamamla" 
+                : "Giriş Yap / Kayıt Ol"
+            }
           </Button>
+
+          {!isAuthenticated && (
+            <p className="mt-4 text-center text-sm text-gray-500">
+              Seçimlerinizi yaptıktan sonra e-posta ile güvenli giriş yapabilirsiniz.
+            </p>
+          )}
         </div>
       </div>
     </div>

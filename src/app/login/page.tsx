@@ -1,26 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const supabase = createClient();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
+
+  useEffect(() => {
+    // Onboarding'den geliyorsa bilgilendirme göster
+    if (redirect === "onboarding") {
+      const role = localStorage.getItem("onboarding_role");
+      const kind = localStorage.getItem("onboarding_kind");
+      console.log("Onboarding seçimleri:", { role, kind });
+    }
+  }, [redirect]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
+    const redirectPath = redirect === "onboarding" ? "/onboarding" : "/dashboard";
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirectPath}`,
       },
     });
 
@@ -51,7 +65,15 @@ export default function LoginPage() {
   return (
     <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border bg-white p-8 shadow-sm">
-        <h1 className="mb-6 text-2xl font-bold">Giriş Yap / Kayıt Ol</h1>
+        <h1 className="mb-2 text-2xl font-bold">Giriş Yap / Kayıt Ol</h1>
+        
+        {redirect === "onboarding" && (
+          <div className="mb-6 rounded-lg bg-sky-50 p-4">
+            <p className="text-sm text-sky-900">
+              ✓ Seçimleriniz kaydedildi. Giriş yaptıktan sonra profiliniz oluşturulacak.
+            </p>
+          </div>
+        )}
         
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
@@ -76,5 +98,20 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
+        <div className="text-center">
+          <div className="mb-4 text-4xl">⏳</div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
