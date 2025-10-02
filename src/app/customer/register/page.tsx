@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { CITIES, DISTRICTS } from "@/lib/constants";
 import { User, Mail, Phone, Lock, MapPin, Briefcase, ChevronRight, ChevronLeft } from "lucide-react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 export default function CustomerRegisterPage() {
   const [step, setStep] = useState(1);
@@ -17,6 +18,7 @@ export default function CustomerRegisterPage() {
   const [userExists, setUserExists] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -122,6 +124,29 @@ export default function CustomerRegisterPage() {
     setLoading(true);
 
     try {
+      // 0. reCAPTCHA Doğrulama
+      if (!executeRecaptcha) {
+        setError("reCAPTCHA yüklenemedi. Lütfen sayfayı yenileyin.");
+        setLoading(false);
+        return;
+      }
+
+      const recaptchaToken = await executeRecaptcha("customer_register");
+      
+      const recaptchaResponse = await fetch("/api/verify-recaptcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: recaptchaToken }),
+      });
+
+      const recaptchaResult = await recaptchaResponse.json();
+
+      if (!recaptchaResult.success) {
+        setError("Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.");
+        setLoading(false);
+        return;
+      }
+
       // 1. Kullanıcı kaydı
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,

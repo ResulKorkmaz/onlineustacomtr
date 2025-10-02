@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
+import RecaptchaProvider from "@/components/recaptcha-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={`${inter.className} flex min-h-screen flex-col`}>
-        <Navbar />
-        {children}
-        <Footer />
+        <RecaptchaProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </RecaptchaProvider>
       </body>
     </html>
   );

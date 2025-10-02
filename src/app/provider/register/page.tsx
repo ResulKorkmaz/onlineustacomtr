@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { SERVICE_CATEGORIES, CITIES, DISTRICTS } from "@/lib/constants";
 import { Check, ChevronRight, ChevronLeft, Upload, AlertCircle, CheckCircle, Search, X as XIcon } from "lucide-react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 type ProviderKind = "individual" | "company" | "";
 type FormData = {
@@ -38,6 +39,7 @@ export default function RegisterPage() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [formData, setFormData] = useState<FormData>({
     kind: "",
@@ -278,6 +280,29 @@ export default function RegisterPage() {
     setError("");
 
     try {
+      // 0. reCAPTCHA Doğrulama
+      if (!executeRecaptcha) {
+        setError("reCAPTCHA yüklenemedi. Lütfen sayfayı yenileyin.");
+        setLoading(false);
+        return;
+      }
+
+      const recaptchaToken = await executeRecaptcha("provider_register");
+      
+      const recaptchaResponse = await fetch("/api/verify-recaptcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: recaptchaToken }),
+      });
+
+      const recaptchaResult = await recaptchaResponse.json();
+
+      if (!recaptchaResult.success) {
+        setError("Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.");
+        setLoading(false);
+        return;
+      }
+
       // 1. Kullanıcı kaydı
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
