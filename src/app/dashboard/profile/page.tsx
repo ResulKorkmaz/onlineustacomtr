@@ -1,10 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!user) return null;
+  if (!user) {
+    redirect("/login");
+  }
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -12,22 +17,22 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .single();
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Profil</h1>
+  // Profil tipine göre yönlendir
+  if (profile) {
+    if (profile.role === "customer") {
+      redirect("/dashboard/profile/customer");
+    } else if (profile.provider_kind === "individual") {
+      redirect("/dashboard/profile/individual");
+    } else if (profile.provider_kind === "company") {
+      redirect("/dashboard/profile/company");
+    }
+  }
 
-      <div className="rounded-2xl border bg-white p-8">
-        <h2 className="mb-4 text-xl font-bold">Profil Bilgileri</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-600">E-posta</label>
-            <p className="mt-1">{user.email}</p>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">Rol</label>
-            <p className="mt-1 capitalize">{profile?.role}</p>
-          </div>
-        </div>
+  // Fallback
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="text-center">
+        <p className="text-gray-600">Profil yükleniyor...</p>
       </div>
     </div>
   );

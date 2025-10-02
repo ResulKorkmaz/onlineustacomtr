@@ -1,36 +1,25 @@
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    // Auth kontrolü - normal client ile
-    const authSupabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await authSupabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: "Yetkisiz erişim" },
-        { status: 401 }
-      );
-    }
-
     const profileData = await request.json();
 
-    // Güvenlik: Kullanıcı sadece kendi profilini oluşturabilir
-    if (profileData.id !== user.id) {
+    // ID kontrolü - zorunlu alan
+    if (!profileData.id) {
       return NextResponse.json(
-        { error: "Yetkisiz işlem" },
-        { status: 403 }
+        { error: "User ID gerekli" },
+        { status: 400 }
       );
     }
 
-    // Admin client ile RLS bypass (sadece profil creation için)
+    // Admin client ile RLS bypass (kayıt esnasında session olmadığı için gerekli)
     const supabase = createAdminClient();
 
-    // Profil oluştur
+    // Email doğrulaması yapılmadan önce profil oluşturulmalı
+    // Çünkü kayıt sonrası email onay bekleniyor
+    
+    // Profil oluştur veya güncelle
     const { data, error } = await supabase
       .from("profiles")
       .upsert(profileData, {

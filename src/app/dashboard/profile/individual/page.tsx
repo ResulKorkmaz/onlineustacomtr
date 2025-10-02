@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 import { 
   Phone, Mail, MapPin, Star, Edit, Save, X, 
   Briefcase, Award, CheckCircle, Clock, TrendingUp,
-  Settings, User, Calendar
+  Settings, User, Calendar, Wallet, MessageSquare, 
+  HelpCircle, UserCheck, Shield, LogOut
 } from "lucide-react";
 import type { Profile } from "@/lib/types/database.types";
 
@@ -165,7 +166,64 @@ export default function IndividualProfilePage() {
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
               >
                 <TrendingUp className="h-5 w-5" />
-                <span>Dashboard</span>
+                <span>Ana Sayfa</span>
+              </button>
+
+              {/* Divider */}
+              <div className="my-2 border-t"></div>
+
+              <button
+                onClick={() => router.push("/dashboard/balance")}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
+              >
+                <Wallet className="h-5 w-5" />
+                <span>Cüzdanım</span>
+              </button>
+
+              <button
+                onClick={() => router.push("/dashboard/reviews")}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
+              >
+                <MessageSquare className="h-5 w-5" />
+                <span>Müşteri Yorumları</span>
+              </button>
+
+              <button
+                onClick={() => router.push("/dashboard/support")}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
+              >
+                <HelpCircle className="h-5 w-5" />
+                <span>Destek Merkezi</span>
+              </button>
+
+              {/* Divider */}
+              <div className="my-2 border-t"></div>
+
+              <button
+                onClick={() => router.push("/dashboard/switch-to-customer")}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
+              >
+                <UserCheck className="h-5 w-5" />
+                <span>Müşteri Profiline Geç</span>
+              </button>
+
+              <button
+                onClick={() => router.push("/dashboard/privacy")}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
+              >
+                <Shield className="h-5 w-5" />
+                <span>Veri ve Gizlilik</span>
+              </button>
+
+              <button
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  router.push("/");
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-red-600 transition hover:bg-red-50"
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Çıkış Yap</span>
               </button>
             </nav>
 

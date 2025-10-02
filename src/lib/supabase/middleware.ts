@@ -47,7 +47,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Onboarding kontrolü - eğer profil yoksa yönlendir
-  if (user && !request.nextUrl.pathname.startsWith("/onboarding")) {
+  if (user && !request.nextUrl.pathname.startsWith("/customer/register")) {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role")
@@ -59,11 +59,11 @@ export async function updateSession(request: NextRequest) {
       console.error("[Middleware] Profile fetch error:", profileError);
     }
 
-    // Profil yoksa onboarding'e yönlendir
+    // Profil yoksa customer register'a yönlendir
     if (!profile) {
-      const onboardingUrl = request.nextUrl.clone();
-      onboardingUrl.pathname = "/onboarding";
-      return NextResponse.redirect(onboardingUrl);
+      const registerUrl = request.nextUrl.clone();
+      registerUrl.pathname = "/customer/register";
+      return NextResponse.redirect(registerUrl);
     }
   }
 

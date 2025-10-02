@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { SERVICE_CATEGORIES, CITIES, DISTRICTS } from "@/lib/constants";
-import { Check, ChevronRight, ChevronLeft, Upload, AlertCircle, CheckCircle } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Upload, AlertCircle, CheckCircle, Search, X as XIcon } from "lucide-react";
 
 type ProviderKind = "individual" | "company" | "";
 type FormData = {
@@ -34,6 +34,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [userExists, setUserExists] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -102,7 +104,7 @@ export default function RegisterPage() {
       return;
     }
 
-    if (step === 2 && formData.kind === "individual" && formData.categories.length === 0) {
+    if (step === 2 && formData.categories.length === 0) {
       setError("Lütfen en az 1 kategori seçin");
       return;
     }
@@ -140,23 +142,119 @@ export default function RegisterPage() {
 
   const toggleCategory = (categoryId: string) => {
     const current = formData.categories;
+    const maxLimit = formData.kind === "individual" ? 3 : 5;
+    
     if (current.includes(categoryId)) {
       setFormData({ ...formData, categories: current.filter(c => c !== categoryId) });
     } else {
-      if (current.length < 3) {
+      if (current.length < maxLimit) {
         setFormData({ ...formData, categories: [...current, categoryId] });
       }
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Görsel dosyaları sıkıştır
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Max boyutlar (yazılar okunabilir olsun)
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1920;
+          
+          let width = img.width;
+          let height = img.height;
+          
+          // Oran koruyarak boyutlandır
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = (height * MAX_WIDTH) / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = (width * MAX_HEIGHT) / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // JPEG olarak 0.7 kalitede sıkıştır (yazılar okunabilir)
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            'image/jpeg',
+            0.7
+          );
+        };
+      };
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Dosya boyutu 5MB'dan küçük olmalıdır");
-        return;
+      const fileType = file.type;
+      
+      setLoading(true);
+      setError("");
+      
+      try {
+        let finalFile = file;
+        
+        // Görsel dosyaysa sıkıştır
+        if (fileType.startsWith('image/')) {
+          const originalSize = (file.size / 1024 / 1024).toFixed(2);
+          finalFile = await compressImage(file);
+          const compressedSize = (finalFile.size / 1024 / 1024).toFixed(2);
+          
+          console.log(`Dosya sıkıştırıldı: ${originalSize}MB → ${compressedSize}MB`);
+          
+          // 2MB limiti
+          if (finalFile.size > 2 * 1024 * 1024) {
+            setError("Sıkıştırılmış dosya bile 2MB'dan büyük. Lütfen daha küçük bir görsel seçin.");
+            setLoading(false);
+            return;
+          }
+        } else if (fileType === 'application/pdf') {
+          // PDF için limit 2MB
+          if (file.size > 2 * 1024 * 1024) {
+            setError("PDF dosyası 2MB'dan küçük olmalıdır");
+            setLoading(false);
+            return;
+          }
+        } else {
+          setError("Sadece JPG, PNG veya PDF dosyası yükleyebilirsiniz");
+          setLoading(false);
+          return;
+        }
+        
+        setFormData({ ...formData, documentFile: finalFile });
+      } catch (err) {
+        console.error("Dosya işleme hatası:", err);
+        setError("Dosya işlenirken hata oluştu");
+      } finally {
+        setLoading(false);
       }
-      setFormData({ ...formData, documentFile: file });
     }
   };
 
@@ -195,17 +293,8 @@ export default function RegisterPage() {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Kullanıcı oluşturulamadı");
 
-      // Email confirmation kontrolü
-      if (authData.user && !authData.session) {
-        setSuccess("Kayıt başarılı! E-postanıza gönderilen onay linkine tıklayarak hesabınızı aktifleştirin. Sonra giriş yapabilirsiniz.");
-        setLoading(false);
-        
-        // 3 saniye sonra login sayfasına yönlendir
-        setTimeout(() => {
-          router.push("/login?message=Lütfen e-postanızı onaylayın");
-        }, 4000);
-        return;
-      }
+      // Email confirmation durumunu kontrol et (ama devam et)
+      const needsEmailConfirmation = authData.user && !authData.session;
 
       // 2. Belge yükleme (şirket ise) - gelecekte kullanılacak
       if (formData.kind === "company" && formData.documentFile) {
@@ -217,7 +306,7 @@ export default function RegisterPage() {
           .upload(`company-docs/${fileName}`, formData.documentFile);
       }
 
-      // 3. Profil oluşturma (Admin API kullanarak RLS bypass)
+      // 3. Profil oluşturma (retry mekanizması ile)
       const profileData = {
         id: authData.user.id,
         role: "provider" as const,
@@ -232,22 +321,55 @@ export default function RegisterPage() {
         is_verified: false,
       };
 
-      const profileResponse = await fetch("/api/register-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profileData),
-      });
+      // Retry mekanizması: 5 deneme, her biri arasında 1 saniye bekle
+      let profileCreated = false;
+      let lastError = null;
+      
+      for (let attempt = 1; attempt <= 5; attempt++) {
+        try {
+          // Her denemeden önce 1 saniye bekle (ilk deneme hariç)
+          if (attempt > 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
 
-      if (!profileResponse.ok) {
-        const errorData = await profileResponse.json();
-        throw new Error(errorData.error || "Profil oluşturulamadı");
+          const profileResponse = await fetch("/api/register-profile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(profileData),
+          });
+
+          if (profileResponse.ok) {
+            profileCreated = true;
+            break;
+          } else {
+            const errorData = await profileResponse.json();
+            lastError = errorData.error;
+            console.log(`Profil oluşturma denemesi ${attempt}/5 başarısız:`, errorData.error);
+          }
+        } catch (err) {
+          lastError = err instanceof Error ? err.message : "Bilinmeyen hata";
+          console.log(`Profil oluşturma denemesi ${attempt}/5 hata:`, err);
+        }
       }
 
-      // 4. Kategorileri kaydet (şahıs ise)
-      if (formData.kind === "individual" && formData.categories.length > 0) {
-        const updatedBio = `${formData.bio}\n\nUzmanlık Alanları: ${formData.expertise}\n\nHizmet Kategorileri: ${formData.categories.map(c => 
-          SERVICE_CATEGORIES.find(cat => cat.id === c)?.name
-        ).join(", ")}`;
+      if (!profileCreated) {
+        throw new Error(lastError || "Profil oluşturulamadı");
+      }
+
+      // 4. Kategorileri kaydet
+      if (formData.categories.length > 0) {
+        let updatedBio = formData.bio;
+        
+        if (formData.kind === "individual") {
+          updatedBio = `${formData.bio}\n\nUzmanlık Alanları: ${formData.expertise}\n\nHizmet Kategorileri: ${formData.categories.map(c => 
+            SERVICE_CATEGORIES.find(cat => cat.id === c)?.name
+          ).join(", ")}`;
+        } else {
+          // Şirket için kategorileri bio'ya ekle
+          updatedBio = `${formData.bio}\n\nHizmet Kategorileri: ${formData.categories.map(c => 
+            SERVICE_CATEGORIES.find(cat => cat.id === c)?.name
+          ).join(", ")}`;
+        }
         
         await fetch("/api/register-profile", {
           method: "POST",
@@ -259,11 +381,20 @@ export default function RegisterPage() {
         });
       }
 
-      // 5. Başarılı - profil sayfasına yönlendir
-      if (formData.kind === "company") {
-        router.push("/dashboard/profile/company");
+      // 5. Başarılı - Email onayı gerekiyorsa login'e, yoksa profile'a yönlendir
+      if (needsEmailConfirmation) {
+        setSuccess("Kayıt başarılı! E-postanıza gönderilen onay linkine tıklayarak hesabınızı aktifleştirin. Sonra giriş yapabilirsiniz.");
+        setLoading(false);
+        setTimeout(() => {
+          router.push("/login?type=provider&message=Lütfen e-postanızı onaylayın");
+        }, 4000);
       } else {
-        router.push("/dashboard/profile/individual");
+        setSuccess("Kayıt başarılı! Yönlendiriliyorsunuz...");
+        if (formData.kind === "company") {
+          router.push("/dashboard/profile/company");
+        } else {
+          router.push("/dashboard/profile/individual");
+        }
       }
 
     } catch (err) {
@@ -356,7 +487,7 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Step 2: Kategori Seçimi (sadece şahıslar için) */}
+            {/* Step 2: Kategori Seçimi */}
             {step === 2 && (
               <div className="space-y-6">
                 <div>
@@ -364,51 +495,122 @@ export default function RegisterPage() {
                   <p className="text-gray-600">
                     {formData.kind === "individual"
                       ? "Hangi kategorilerde hizmet veriyorsunuz? (En fazla 3 kategori seçebilirsiniz)"
-                      : "Şirketler için kategori seçimi sonraki adımlarda yapılacaktır"}
+                      : "Hangi kategorilerde hizmet veriyorsunuz? (En fazla 5 kategori seçebilirsiniz)"}
                   </p>
                 </div>
 
-                {formData.kind === "individual" ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {SERVICE_CATEGORIES.map((category) => {
-                      const isSelected = formData.categories.includes(category.id);
-                      const isDisabled = !isSelected && formData.categories.length >= 3;
-
-                      return (
-                        <button
-                          key={category.id}
-                          type="button"
-                          onClick={() => toggleCategory(category.id)}
-                          disabled={isDisabled}
-                          className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition ${
-                            isSelected
-                              ? "border-sky-500 bg-sky-50"
-                              : isDisabled
-                              ? "border-gray-200 bg-gray-50 opacity-50"
-                              : "border-gray-300 hover:border-gray-400"
-                          }`}
-                        >
-                          <span className="text-2xl">{category.icon}</span>
-                          <span className="font-medium">{category.name}</span>
-                          {isSelected && <Check className="ml-auto h-5 w-5 text-sky-500" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="rounded-lg bg-blue-50 p-6 text-center">
-                    <p className="text-blue-900">
-                      Şirket kaydı için kategori seçimi zorunlu değildir.
-                      Profilinizde istediğiniz kategorileri belirtebilirsiniz.
-                    </p>
+                {/* Seçilen Kategoriler */}
+                {formData.categories.length > 0 && (
+                  <div className="rounded-lg border bg-gray-50 p-4">
+                    <p className="mb-3 text-sm font-medium text-gray-700">Seçilen Kategoriler:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.categories.map((catId) => {
+                        const category = SERVICE_CATEGORIES.find(c => c.id === catId);
+                        return (
+                          <span
+                            key={catId}
+                            className="inline-flex items-center gap-2 rounded-full bg-sky-100 px-3 py-1 text-sm font-medium text-sky-700"
+                          >
+                            <span>{category?.icon}</span>
+                            <span>{category?.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => toggleCategory(catId)}
+                              className="ml-1 hover:text-sky-900"
+                            >
+                              <XIcon className="h-3 w-3" />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 
-                {formData.kind === "individual" && (
-                  <p className="text-sm text-gray-600">
-                    Seçilen: {formData.categories.length} / 3
-                  </p>
-                )}
+                {/* Arama Kutusu */}
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Kategori ara veya tıklayın..."
+                      value={categorySearch}
+                      onChange={(e) => setCategorySearch(e.target.value)}
+                      onFocus={() => setShowCategoryDropdown(true)}
+                      className="w-full rounded-lg border border-gray-300 py-3 pl-10 pr-4 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </div>
+
+                  {/* Dropdown Listesi */}
+                  {showCategoryDropdown && (
+                    <>
+                      {/* Overlay - Dışarıya tıklayınca kapat */}
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setShowCategoryDropdown(false)}
+                      />
+                      
+                      <div className="absolute z-20 mt-2 max-h-80 w-full overflow-y-auto rounded-lg border bg-white shadow-xl">
+                        {SERVICE_CATEGORIES.filter(cat =>
+                          cat.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
+                          cat.id.toLowerCase().includes(categorySearch.toLowerCase())
+                        ).map((category) => {
+                          const isSelected = formData.categories.includes(category.id);
+                          const maxLimit = formData.kind === "individual" ? 3 : 5;
+                          const isDisabled = !isSelected && formData.categories.length >= maxLimit;
+
+                          return (
+                            <button
+                              key={category.id}
+                              type="button"
+                              onClick={() => {
+                                if (!isDisabled) {
+                                  toggleCategory(category.id);
+                                }
+                              }}
+                              disabled={isDisabled}
+                              className={`flex w-full items-center gap-3 border-b px-4 py-3 text-left transition ${
+                                isSelected
+                                  ? "bg-sky-50 text-sky-700"
+                                  : isDisabled
+                                  ? "cursor-not-allowed bg-gray-50 opacity-50"
+                                  : "hover:bg-gray-50"
+                              }`}
+                            >
+                              <span className="text-2xl">{category.icon}</span>
+                              <span className="flex-1 font-medium">{category.name}</span>
+                              {isSelected && <Check className="h-5 w-5 text-sky-500" />}
+                            </button>
+                          );
+                        })}
+                        {SERVICE_CATEGORIES.filter(cat =>
+                          cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+                        ).length === 0 && (
+                          <div className="px-4 py-8 text-center text-gray-500">
+                            <p>Sonuç bulunamadı</p>
+                            <p className="mt-1 text-sm">Farklı anahtar kelimeler deneyin</p>
+                          </div>
+                        )}
+                        
+                        {/* Kapat Butonu (Dropdown içinde) */}
+                        <div className="sticky bottom-0 border-t bg-white p-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowCategoryDropdown(false)}
+                            className="w-full rounded-lg bg-sky-600 py-2 text-sm font-medium text-white hover:bg-sky-700"
+                          >
+                            Listeyi Kapat
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Kategori Sayacı */}
+                <p className="text-sm text-gray-600">
+                  Seçilen: {formData.categories.length} / {formData.kind === "individual" ? 3 : 5}
+                </p>
               </div>
             )}
 
@@ -582,7 +784,7 @@ export default function RegisterPage() {
                 {formData.kind === "company" && (
                   <div>
                     <label className="mb-2 block text-sm font-medium">
-                      Belediye Ruhsatı veya Fatura Yükleyin (PDF, JPG, PNG - Max 5MB)
+                      Belediye Ruhsatı veya Fatura Yükleyin
                     </label>
                     <div className="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-sky-400">
                       <input
@@ -591,19 +793,35 @@ export default function RegisterPage() {
                         onChange={handleFileChange}
                         className="hidden"
                         id="document-upload"
+                        disabled={loading}
                       />
-                      <label htmlFor="document-upload" className="cursor-pointer">
+                      <label htmlFor="document-upload" className={`cursor-pointer ${loading ? 'opacity-50' : ''}`}>
                         <Upload className="mx-auto mb-2 h-10 w-10 text-gray-400" />
-                        <p className="text-sm text-gray-600">
-                          {formData.documentFile
-                            ? formData.documentFile.name
-                            : "Belge yüklemek için tıklayın"}
-                        </p>
+                        {loading ? (
+                          <p className="text-sm text-sky-600">Dosya işleniyor...</p>
+                        ) : (
+                          <p className="text-sm text-gray-600">
+                            {formData.documentFile
+                              ? `✓ ${formData.documentFile.name} (${(formData.documentFile.size / 1024).toFixed(0)} KB)`
+                              : "Belge yüklemek için tıklayın"}
+                          </p>
+                        )}
                       </label>
                     </div>
-                    <p className="mt-2 text-xs text-gray-500">
-                      Şirket kaydınızın onaylanması için gereklidir
-                    </p>
+                    <div className="mt-2 space-y-1 text-xs text-gray-500">
+                      <p className="flex items-center gap-1">
+                        <span className="text-green-600">✓</span> Kabul edilen: JPG, PNG, PDF
+                      </p>
+                      <p className="flex items-center gap-1">
+                        <span className="text-green-600">✓</span> Maksimum boyut: 2 MB
+                      </p>
+                      <p className="flex items-center gap-1">
+                        <span className="text-sky-600">ℹ</span> Görseller otomatik sıkıştırılır (yazılar okunabilir kalır)
+                      </p>
+                      <p className="mt-2 font-medium text-gray-700">
+                        Şirket kaydınızın onaylanması için gereklidir
+                      </p>
+                    </div>
                   </div>
                 )}
 

@@ -8,17 +8,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 function LoginForm() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const redirect = searchParams.get("redirect");
+  const typeParam = searchParams.get("type") as "customer" | "provider" | null;
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState<"customer" | "provider">("customer");
+  const [userType, setUserType] = useState<"customer" | "provider">(typeParam || "customer");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [resetMode, setResetMode] = useState(false);
   const [error, setError] = useState("");
   const supabase = createClient();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const redirect = searchParams.get("redirect");
+
+  useEffect(() => {
+    // URL parametresinden type varsa set et
+    if (typeParam) {
+      setUserType(typeParam);
+    }
+  }, [typeParam]);
 
   useEffect(() => {
     // Onboarding'den geliyorsa bilgilendirme göster
@@ -62,7 +71,7 @@ function LoginForm() {
       localStorage.setItem("onboarding_role", userType);
     }
 
-    const redirectPath = redirect === "onboarding" ? "/onboarding" : "/dashboard";
+    const redirectPath = redirect === "onboarding" ? "/customer/register" : "/dashboard";
 
     // E-posta ve şifre ile giriş
     const { error } = await supabase.auth.signInWithPassword({
@@ -71,7 +80,14 @@ function LoginForm() {
     });
 
     if (error) {
-      setError(error.message);
+      // Kullanıcı dostu hata mesajları
+      if (error.message.includes("Invalid login credentials")) {
+        setError("E-posta veya şifre hatalı. Eğer yeni kayıt olduysanız, lütfen e-postanızdaki onay linkine tıklayın.");
+      } else if (error.message.includes("Email not confirmed")) {
+        setError("E-posta adresiniz henüz onaylanmamış. Lütfen gelen kutunuzu kontrol edin.");
+      } else {
+        setError(error.message);
+      }
     } else {
       router.push(redirectPath);
     }
@@ -217,7 +233,7 @@ function LoginForm() {
         {!resetMode && redirect !== "onboarding" && (
           <p className="mt-6 text-center text-sm text-gray-600">
             Hesabınız yok mu?{" "}
-            <Link href="/onboarding" className="font-medium text-sky-600 hover:text-sky-700 hover:underline">
+            <Link href="/signup" className="font-medium text-sky-600 hover:text-sky-700 hover:underline">
               Kayıt Ol
             </Link>
           </p>

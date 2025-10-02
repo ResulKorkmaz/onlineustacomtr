@@ -7,10 +7,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import type { Profile } from "@/lib/types/database.types";
-import type { User } from "@supabase/supabase-js";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
@@ -104,17 +104,16 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* İlan Oluştur Butonu - Herkese Göster */}
+            <Link href="/jobs/new" className="hidden sm:block">
+              <Button size="sm" className="bg-white text-sky-600 hover:bg-sky-50">
+                <Plus className="h-4 w-4" />
+                <span className="ml-1">İlan Ver</span>
+              </Button>
+            </Link>
+
             {user ? (
               <>
-                {profile?.role === "customer" && (
-                  <Link href="/jobs/new" className="hidden sm:block">
-                    <Button size="sm" className="bg-white text-sky-600 hover:bg-sky-50">
-                      <Plus className="h-4 w-4" />
-                      <span className="hidden sm:inline ml-1">İlan Oluştur</span>
-                    </Button>
-                  </Link>
-                )}
-                
                 <Link href="/dashboard/notifications" className="hidden sm:block">
                   <Button variant="ghost" size="icon" className="text-white hover:bg-sky-600">
                     <Bell className="h-5 w-5" />
@@ -129,14 +128,22 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                {/* Desktop buttons */}
                 <Link href="/login" className="hidden sm:block">
                   <Button variant="ghost" size="sm" className="text-white hover:bg-sky-600">
                     Giriş Yap
                   </Button>
                 </Link>
-                <Link href="/register" className="hidden sm:block">
+                <Link href="/signup" className="hidden sm:block">
                   <Button size="sm" className="bg-white text-sky-600 hover:bg-sky-50">
                     Kayıt Ol
+                  </Button>
+                </Link>
+
+                {/* Mobile login button - hamburger yanında */}
+                <Link href="/login" className="sm:hidden">
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-sky-600">
+                    Giriş
                   </Button>
                 </Link>
               </>
@@ -197,14 +204,12 @@ export default function Navbar() {
                     </Button>
                   </Link>
 
-                  {profile?.role === "customer" && (
-                    <Link href="/jobs/new">
-                      <Button className="w-full">
-                        <Plus className="mr-2 h-4 w-4" />
-                        İlan Oluştur
-                      </Button>
-                    </Link>
-                  )}
+                  <Link href="/jobs/new">
+                    <Button className="w-full">
+                      <Plus className="mr-2 h-4 w-4" />
+                      İlan Ver
+                    </Button>
+                  </Link>
 
                   <Link href="/dashboard/notifications">
                     <Button variant="outline" className="w-full justify-start">
@@ -226,13 +231,15 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="mt-4 flex flex-col gap-2">
-                  <Link href="/login">
-                    <Button variant="outline" className="w-full">
-                      Giriş Yap
+                  <Link href="/jobs/new">
+                    <Button className="w-full">
+                      <Plus className="mr-2 h-4 w-4" />
+                      İlan Ver
                     </Button>
                   </Link>
-                  <Link href="/register">
-                    <Button className="w-full">
+                  
+                  <Link href="/signup">
+                    <Button variant="outline" className="w-full">
                       Kayıt Ol
                     </Button>
                   </Link>
