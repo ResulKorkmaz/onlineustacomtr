@@ -156,122 +156,123 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
             </div>
           </div>
 
-        {/* Teklifler Bölümü */}
-        {isOwner ? (
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            <div className="mb-6 flex items-center gap-3">
-              <MessageCircle className="h-6 w-6 text-sky-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Gelen Teklifler</h2>
-            </div>
-            
-            {bids && bids.length > 0 ? (
-              <div className="space-y-4">
-                {bids.map((bid) => (
-                  <div key={bid.id} className="rounded-xl border bg-gradient-to-r from-gray-50 to-white p-6 transition hover:shadow-md">
-                    <div className="mb-4 flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-100">
-                          <User className="h-6 w-6 text-sky-600" />
+          {/* Teklifler Bölümü */}
+          {isOwner ? (
+            <div className="rounded-2xl border bg-white p-8 shadow-sm">
+              <div className="mb-6 flex items-center gap-3">
+                <MessageCircle className="h-6 w-6 text-sky-600" />
+                <h2 className="text-2xl font-bold text-gray-900">Gelen Teklifler</h2>
+              </div>
+              
+              {bids && bids.length > 0 ? (
+                <div className="space-y-4">
+                  {bids.map((bid) => (
+                    <div key={bid.id} className="rounded-xl border bg-gradient-to-r from-gray-50 to-white p-6 transition hover:shadow-md">
+                      <div className="mb-4 flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-100">
+                            <User className="h-6 w-6 text-sky-600" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-sky-600">₺{bid.amount.toLocaleString('tr-TR')}</p>
+                            <p className="text-sm text-gray-500">{formatRelativeTime(bid.created_at)}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-2xl font-bold text-sky-600">₺{bid.amount.toLocaleString('tr-TR')}</p>
-                          <p className="text-sm text-gray-500">{formatRelativeTime(bid.created_at)}</p>
-                        </div>
+                        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                          Beklemede
+                        </span>
                       </div>
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                        Beklemede
-                      </span>
+                      <div className="rounded-lg bg-white p-4">
+                        <p className="text-gray-700">{bid.message}</p>
+                      </div>
                     </div>
-                    <div className="rounded-lg bg-white p-4">
-                      <p className="text-gray-700">{bid.message}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-                <MessageCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                <p className="text-gray-600">Henüz teklif gelmedi.</p>
-                <p className="mt-2 text-sm text-gray-500">Ustalar ilanınızı görüntülediğinde teklif verecekler.</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            <div className="mb-6 flex items-center gap-3">
-              <DollarSign className="h-6 w-6 text-green-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Teklif Gönder</h2>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center">
+                  <MessageCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                  <p className="text-gray-600">Henüz teklif gelmedi.</p>
+                  <p className="mt-2 text-sm text-gray-500">Ustalar ilanınızı görüntülediğinde teklif verecekler.</p>
+                </div>
+              )}
             </div>
-            
-            {bids && bids.length > 0 ? (
-              <div className="rounded-xl border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-6">
-                <div className="flex items-start gap-4">
-                  <CheckCircle className="h-6 w-6 flex-shrink-0 text-green-600" />
-                  <div>
-                    <p className="mb-2 font-semibold text-green-900">Bu ilana daha önce teklif verdiniz.</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-green-700">Teklifiniz:</span>
-                      <span className="text-xl font-bold text-green-900">₺{bids[0].amount.toLocaleString('tr-TR')}</span>
+          ) : (
+            <div className="rounded-2xl border bg-white p-8 shadow-sm">
+              <div className="mb-6 flex items-center gap-3">
+                <DollarSign className="h-6 w-6 text-green-600" />
+                <h2 className="text-2xl font-bold text-gray-900">Teklif Gönder</h2>
+              </div>
+              
+              {bids && bids.length > 0 ? (
+                <div className="rounded-xl border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-6">
+                  <div className="flex items-start gap-4">
+                    <CheckCircle className="h-6 w-6 flex-shrink-0 text-green-600" />
+                    <div>
+                      <p className="mb-2 font-semibold text-green-900">Bu ilana daha önce teklif verdiniz.</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-green-700">Teklifiniz:</span>
+                        <span className="text-xl font-bold text-green-900">₺{bids[0].amount.toLocaleString('tr-TR')}</span>
+                      </div>
+                      <p className="mt-2 text-sm text-green-700">{bids[0].message}</p>
                     </div>
-                    <p className="mt-2 text-sm text-green-700">{bids[0].message}</p>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Teklif Tutarı (₺) <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-semibold text-gray-400">₺</span>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder="1000"
-                      className="pl-8 text-base"
+              ) : (
+                <div className="space-y-6">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                      Teklif Tutarı (₺) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-semibold text-gray-400">₺</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="1000"
+                        className="pl-8 text-base"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                      Mesajınız <span className="text-red-500">*</span>
+                    </label>
+                    <Textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Neden sizi seçmeli? Deneyimlerinizi ve yaklaşımınızı paylaşın..."
+                      rows={5}
+                      className="resize-none"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Mesajınız <span className="text-red-500">*</span>
-                  </label>
-                  <Textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Neden sizi seçmeli? Deneyimlerinizi ve yaklaşımınızı paylaşın..."
-                    rows={5}
-                    className="resize-none"
-                  />
-                </div>
+                  {error && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                      <p className="text-sm font-medium text-red-800">{error}</p>
+                    </div>
+                  )}
 
-                {error && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-                    <p className="text-sm font-medium text-red-800">{error}</p>
+                  <Button
+                    onClick={handleSubmitBid}
+                    disabled={!amount || !message || loading}
+                    className="w-full bg-sky-600 py-6 text-lg font-semibold hover:bg-sky-700"
+                  >
+                    {loading ? "Gönderiliyor..." : "Teklif Gönder"}
+                  </Button>
+
+                  <div className="rounded-lg border bg-blue-50 p-4">
+                    <p className="text-sm text-blue-900">
+                      <strong>📌 Not:</strong> Günde maksimum 3 teklif gönderebilirsiniz. Teklifiniz müşteri tarafından görüntülenecektir.
+                    </p>
                   </div>
-                )}
-
-                <Button
-                  onClick={handleSubmitBid}
-                  disabled={!amount || !message || loading}
-                  className="w-full bg-sky-600 py-6 text-lg font-semibold hover:bg-sky-700"
-                >
-                  {loading ? "Gönderiliyor..." : "Teklif Gönder"}
-                </Button>
-
-                <div className="rounded-lg border bg-blue-50 p-4">
-                  <p className="text-sm text-blue-900">
-                    <strong>📌 Not:</strong> Günde maksimum 3 teklif gönderebilirsiniz. Teklifiniz müşteri tarafından görüntülenecektir.
-                  </p>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
