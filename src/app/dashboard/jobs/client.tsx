@@ -70,6 +70,7 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
   const [deletingJobId, setDeletingJobId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(new Set());
 
   const router = useRouter();
   const supabase = createClient();
@@ -79,6 +80,21 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
     e.preventDefault();
     e.stopPropagation();
     setOpenMenuId(openMenuId === jobId ? null : jobId);
+  };
+
+  // Açıklama genişletme
+  const toggleDescription = (jobId: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setExpandedDescriptions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(jobId)) {
+        newSet.delete(jobId);
+      } else {
+        newSet.add(jobId);
+      }
+      return newSet;
+    });
   };
 
   // Teklifleri yükle
@@ -325,17 +341,30 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
               </div>
 
               {/* Main Content */}
-              <Link href={`/jobs/${job.id}`} className="block p-4 md:p-6">
-                {/* İlan Başlığı */}
-                <h3 className="text-lg md:text-xl font-semibold text-gray-900 transition group-hover:text-sky-600 mb-3">
-                  {job.title}
-                </h3>
+              <div className="p-4 md:p-6">
+                <Link href={`/jobs/${job.id}`} className="block">
+                  {/* İlan Başlığı */}
+                  <h3 className="text-lg md:text-xl font-semibold text-gray-900 transition group-hover:text-sky-600 mb-3">
+                    {job.title}
+                  </h3>
+                </Link>
 
-                {/* İlan Açıklaması - Desktop */}
-                <p className="hidden md:block mt-2 mb-4 line-clamp-2 text-gray-600">
-                  {job.description}
-                </p>
+                {/* İlan Açıklaması - Tüm Cihazlarda */}
+                <div className="mb-3">
+                  <p className={`text-sm md:text-base text-gray-600 ${expandedDescriptions.has(job.id) ? '' : 'line-clamp-2'}`}>
+                    {job.description}
+                  </p>
+                  {job.description && job.description.length > 100 && (
+                    <button
+                      onClick={(e) => toggleDescription(job.id, e)}
+                      className="mt-1 text-xs md:text-sm font-medium text-sky-600 hover:text-sky-700 hover:underline"
+                    >
+                      {expandedDescriptions.has(job.id) ? 'Daha Az' : 'Devamı'}
+                    </button>
+                  )}
+                </div>
 
+                <Link href={`/jobs/${job.id}`} className="block">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     {/* Info Cards - Mobilde 2 sütun, Tablet+ 4 sütun */}
@@ -407,7 +436,8 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
                     </button>
                   )}
                 </div>
-              </Link>
+                </Link>
+              </div>
             </div>
           ))}
         </div>
