@@ -90,28 +90,47 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
     try {
       console.log("[loadBids] Loading bids for job:", job.id);
       
-      const { data, error: bidsError } = await supabase
+      // Önce sadece bids'leri al
+      const { data: bidsData, error: bidsError } = await supabase
         .from("bids")
-        .select(`
-          *,
-          provider:profiles(full_name, phone)
-        `)
+        .select("*")
         .eq("job_id", job.id)
         .order("created_at", { ascending: false });
 
-      console.log("[loadBids] Bids data:", data);
+      console.log("[loadBids] Bids data:", bidsData);
       console.log("[loadBids] Bids error:", bidsError);
 
       if (bidsError) {
         console.error("[loadBids] Error loading bids:", bidsError);
         throw bidsError;
       }
-      
-      setBids(data || []);
+
+      // Eğer teklif varsa, provider bilgilerini ayrı olarak al
+      if (bidsData && bidsData.length > 0) {
+        const providerIds = bidsData.map(b => b.provider_id);
+        
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, full_name, phone")
+          .in("id", providerIds);
+
+        console.log("[loadBids] Profiles data:", profilesData);
+
+        // Bids ve profiles'ı birleştir
+        const bidsWithProviders = bidsData.map(bid => ({
+          ...bid,
+          provider: profilesData?.find(p => p.id === bid.provider_id) || { full_name: "Bilinmeyen", phone: "" }
+        }));
+
+        setBids(bidsWithProviders);
+      } else {
+        setBids([]);
+      }
     } catch (err) {
       console.error("[loadBids] Catch error:", err);
       setError(err instanceof Error ? err.message : "Teklifler yüklenemedi");
     } finally {
+      console.log("[loadBids] Finally - setting loading to false");
       setLoadingBids(false);
     }
   };
