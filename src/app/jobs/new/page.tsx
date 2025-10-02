@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { CITIES, DISTRICTS, SERVICE_CATEGORIES } from "@/lib/constants";
 import { useRouter } from "next/navigation";
-import { Search, ChevronRight, ChevronLeft, Check, Calendar } from "lucide-react";
+import { Search, ChevronRight, ChevronLeft, Check, Calendar, Clock } from "lucide-react";
 
 export default function NewJobPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -97,35 +97,41 @@ export default function NewJobPage() {
   };
 
   const handleSubmit = async () => {
-    setError("");
+    try {
+      setError("");
 
-    // Son adım validasyonu
-    if (!formData.budget_min || !formData.budget_max) {
-      setError("Minimum ve maksimum bütçe zorunludur");
-      return;
-    }
+      // Son adım validasyonu
+      if (!formData.budget_min || !formData.budget_max) {
+        setError("Minimum ve maksimum bütçe zorunludur");
+        return;
+      }
 
-    if (parseFloat(formData.budget_min) <= 0 || parseFloat(formData.budget_max) <= 0) {
-      setError("Bütçe değerleri 0'dan büyük olmalıdır");
-      return;
-    }
+      if (parseFloat(formData.budget_min) <= 0 || parseFloat(formData.budget_max) <= 0) {
+        setError("Bütçe değerleri 0'dan büyük olmalıdır");
+        return;
+      }
 
-    if (parseFloat(formData.budget_min) > parseFloat(formData.budget_max)) {
-      setError("Minimum bütçe, maksimum bütçeden büyük olamaz");
-      return;
-    }
+      if (parseFloat(formData.budget_min) > parseFloat(formData.budget_max)) {
+        setError("Minimum bütçe, maksimum bütçeden büyük olamaz");
+        return;
+      }
 
-    setLoading(true);
+      setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/login");
-      return;
-    }
+      // Kullanıcı kontrolü
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        console.error("[JobCreate] User error:", userError);
+        setError("Oturum hatası. Lütfen tekrar giriş yapın.");
+        router.push("/login");
+        return;
+      }
 
-    const { data, error: submitError } = await supabase
-      .from("jobs")
-      .insert({
+      console.log("[JobCreate] Creating job for user:", user.id);
+
+      // İlan oluştur
+      const jobData = {
         customer_id: user.id,
         title: formData.title,
         category: formData.category,
@@ -138,22 +144,47 @@ export default function NewJobPage() {
         budget_min: parseFloat(formData.budget_min),
         budget_max: parseFloat(formData.budget_max),
         status: "open",
-      })
-      .select()
-      .single();
+      };
 
-    if (submitError) {
-      if (submitError.message.includes("günlük") || submitError.message.includes("gün")) {
-        setError(submitError.message);
-      } else if (submitError.message.includes("limit")) {
-        setError(submitError.message);
-      } else {
-        setError("İlan oluşturulamadı. Lütfen tekrar deneyin.");
+      console.log("[JobCreate] Job data:", jobData);
+
+      const { data, error: submitError } = await supabase
+        .from("jobs")
+        .insert(jobData)
+        .select()
+        .single();
+
+      if (submitError) {
+        console.error("[JobCreate] Submit error:", submitError);
+        
+        if (submitError.message.includes("günlük") || submitError.message.includes("gün")) {
+          setError(submitError.message);
+        } else if (submitError.message.includes("limit")) {
+          setError(submitError.message);
+        } else if (submitError.message.includes("violates foreign key")) {
+          setError("Profil bilgileriniz eksik. Lütfen profilinizi tamamlayın.");
+        } else {
+          setError(`İlan oluşturulamadı: ${submitError.message}`);
+        }
+        return;
       }
-      console.error("[JobCreate] Error:", submitError);
-      setLoading(false);
-    } else if (data) {
+
+      if (!data) {
+        console.error("[JobCreate] No data returned");
+        setError("İlan oluşturuldu ancak bilgiler alınamadı.");
+        return;
+      }
+
+      console.log("[JobCreate] Job created successfully:", data.id);
+      
+      // Başarılı - İlan detay sayfasına yönlendir
       router.push(`/jobs/${data.id}`);
+      
+    } catch (err) {
+      console.error("[JobCreate] Unexpected error:", err);
+      setError(err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -406,47 +437,94 @@ export default function NewJobPage() {
                   </p>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    İş Tarihi <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                    <Input
-                      type="date"
-                      value={formData.job_date}
-                      onChange={(e) => setFormData({ ...formData, job_date: e.target.value })}
-                      className="pl-10 text-base"
-                      min={new Date().toISOString().split('T')[0]}
-                    />
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {/* Tarih Seçimi */}
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                      İş Tarihi <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <Calendar className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="date"
+                        value={formData.job_date}
+                        onChange={(e) => setFormData({ ...formData, job_date: e.target.value })}
+                        className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pl-10 text-base text-gray-900 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                    {formData.job_date && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        📅 {new Date(formData.job_date + 'T00:00:00').toLocaleDateString('tr-TR', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Saat Seçimi */}
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                      İş Saati <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <Clock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="time"
+                        value={formData.job_time}
+                        onChange={(e) => setFormData({ ...formData, job_time: e.target.value })}
+                        className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pl-10 text-base text-gray-900 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      />
+                    </div>
+                    {formData.job_time && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        🕐 Saat: {formData.job_time}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    İş Saati <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="time"
-                    value={formData.job_time}
-                    onChange={(e) => setFormData({ ...formData, job_time: e.target.value })}
-                    className="text-base"
-                  />
-                </div>
+                {/* Date Time Preview */}
+                {formData.job_date && formData.job_time && (
+                  <div className="rounded-xl border-2 border-sky-200 bg-gradient-to-br from-sky-50 to-blue-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-600 text-white">
+                        <Calendar className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Planlanan İş Zamanı</p>
+                        <p className="mt-1 text-lg font-semibold text-gray-900">
+                          {new Date(formData.job_date + 'T00:00:00').toLocaleDateString('tr-TR', { 
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                          })} - {formData.job_time}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Price Research Checkbox */}
-                <div className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4">
+                <div className="rounded-xl border-2 border-dashed border-orange-300 bg-orange-50 p-5">
                   <label className="flex cursor-pointer items-start gap-3">
                     <input
                       type="checkbox"
                       checked={formData.only_price_research}
                       onChange={(e) => setFormData({ ...formData, only_price_research: e.target.checked })}
-                      className="mt-1 h-5 w-5 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                      className="mt-1 h-5 w-5 rounded border-orange-300 text-orange-600 focus:ring-orange-500"
                     />
                     <div>
-                      <p className="font-medium text-gray-900">Sadece Fiyat Araştırıyorum</p>
-                      <p className="mt-1 text-sm text-gray-600">
-                        Henüz kesin karar vermedim, sadece fiyat teklifi almak istiyorum
+                      <p className="font-semibold text-orange-900">💰 Sadece Fiyat Araştırıyorum</p>
+                      <p className="mt-1 text-sm text-orange-800">
+                        Henüz kesin karar vermedim, öncelikle ne kadar tutacağını öğrenmek istiyorum
                       </p>
                     </div>
                   </label>
