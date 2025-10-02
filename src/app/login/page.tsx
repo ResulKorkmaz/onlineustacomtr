@@ -252,7 +252,7 @@ function LoginForm() {
           )}
         </form>
 
-        {!resetMode && redirect !== "onboarding" && (
+        {!resetMode && redirect !== "onboarding" && redirect !== "admin" && (
           <p className="mt-6 text-center text-sm text-gray-600">
             Hesabınız yok mu?{" "}
             <Link href="/signup" className="font-medium text-sky-600 hover:text-sky-700 hover:underline">
