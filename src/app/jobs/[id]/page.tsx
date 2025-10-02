@@ -2,9 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import JobDetailClient from "./client";
 
-export default async function JobDetailPage({ params }: { params: { id: string } }) {
+export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
-  const jobId = parseInt(params.id);
+  const { id } = await params;
+  const jobId = parseInt(id);
 
   if (isNaN(jobId)) notFound();
 

@@ -14,6 +14,7 @@ export default function NewJobPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -130,6 +131,26 @@ export default function NewJobPage() {
 
       console.log("[JobCreate] Creating job for user:", user.id);
 
+      // Kullanıcının profil bilgilerini kontrol et
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, role, full_name")
+        .eq("id", user.id)
+        .single();
+
+      console.log("[JobCreate] User profile:", profile);
+      
+      if (profileError || !profile) {
+        console.error("[JobCreate] Profile error:", profileError);
+        setError("Profil bilgileriniz bulunamadı. Lütfen önce kayıt olun.");
+        return;
+      }
+
+      if (profile.role !== "customer") {
+        setError(`İlan oluşturma sadece müşteriler içindir. Rolünüz: ${profile.role}`);
+        return;
+      }
+
       // İlan oluştur
       const jobData = {
         customer_id: user.id,
@@ -156,6 +177,13 @@ export default function NewJobPage() {
 
       if (submitError) {
         console.error("[JobCreate] Submit error:", submitError);
+        console.error("[JobCreate] Submit error JSON:", JSON.stringify(submitError, null, 2));
+        
+        // Boş error objesi genellikle RLS hatası demektir
+        if (!submitError.message || submitError.message === "") {
+          setError("İlan oluşturulamadı. Yetki hatası: Lütfen profil bilgilerinizin eksiksiz olduğundan emin olun.");
+          return;
+        }
         
         if (submitError.message.includes("günlük") || submitError.message.includes("gün")) {
           setError(submitError.message);
@@ -163,8 +191,10 @@ export default function NewJobPage() {
           setError(submitError.message);
         } else if (submitError.message.includes("violates foreign key")) {
           setError("Profil bilgileriniz eksik. Lütfen profilinizi tamamlayın.");
+        } else if (submitError.message.includes("permission") || submitError.message.includes("policy")) {
+          setError("İlan oluşturma yetkiniz yok. Lütfen müşteri olarak kayıt olduğunuzdan emin olun.");
         } else {
-          setError(`İlan oluşturulamadı: ${submitError.message}`);
+          setError(`İlan oluşturulamadı: ${submitError.message || "Bilinmeyen hata"}`);
         }
         return;
       }
@@ -177,8 +207,13 @@ export default function NewJobPage() {
 
       console.log("[JobCreate] Job created successfully:", data.id);
       
-      // Başarılı - İlan detay sayfasına yönlendir
-      router.push(`/jobs/${data.id}`);
+      // Başarılı - Başarı mesajı göster
+      setSuccess(true);
+      
+      // 2 saniye sonra ilan detay sayfasına yönlendir
+      setTimeout(() => {
+        router.push(`/jobs/${data.id}`);
+      }, 2000);
       
     } catch (err) {
       console.error("[JobCreate] Unexpected error:", err);
@@ -195,6 +230,31 @@ export default function NewJobPage() {
     { number: 4, title: "Tarih & Saat" },
     { number: 5, title: "Bütçe" },
   ];
+
+  // Başarı mesajı gösteriliyorsa tüm formu gizle
+  if (success) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+          <div className="mb-6 flex justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+              <Check className="h-10 w-10 text-green-600" />
+            </div>
+          </div>
+          <h2 className="mb-2 text-center text-2xl font-bold text-gray-900">
+            İlan Başarıyla Yayınlandı! 🎉
+          </h2>
+          <p className="mb-6 text-center text-gray-600">
+            İlanınız yayına alındı. Ustalar ilanınızı görebilecek ve teklif verebilecekler.
+          </p>
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-sky-600"></div>
+            <span>İlan detaylarına yönlendiriliyorsunuz...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
