@@ -88,18 +88,28 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
     setError("");
 
     try {
+      console.log("[loadBids] Loading bids for job:", job.id);
+      
       const { data, error: bidsError } = await supabase
         .from("bids")
         .select(`
           *,
-          provider:profiles!bids_provider_id_fkey(full_name, phone)
+          provider:profiles(full_name, phone)
         `)
         .eq("job_id", job.id)
         .order("created_at", { ascending: false });
 
-      if (bidsError) throw bidsError;
+      console.log("[loadBids] Bids data:", data);
+      console.log("[loadBids] Bids error:", bidsError);
+
+      if (bidsError) {
+        console.error("[loadBids] Error loading bids:", bidsError);
+        throw bidsError;
+      }
+      
       setBids(data || []);
     } catch (err) {
+      console.error("[loadBids] Catch error:", err);
       setError(err instanceof Error ? err.message : "Teklifler yüklenemedi");
     } finally {
       setLoadingBids(false);
@@ -403,7 +413,19 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
 
             {/* Content */}
             <div className="p-8">
-              {loadingBids ? (
+              {error ? (
+                <div className="rounded-xl border-2 border-red-200 bg-red-50 p-12 text-center">
+                  <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+                  <p className="font-medium text-red-900">Teklifler yüklenemedi</p>
+                  <p className="mt-2 text-sm text-red-700">{error}</p>
+                  <button
+                    onClick={() => loadBids(viewingBidsFor)}
+                    className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                  >
+                    Tekrar Dene
+                  </button>
+                </div>
+              ) : loadingBids ? (
                 <div className="py-12 text-center">
                   <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-sky-500 border-t-transparent"></div>
                   <p className="text-gray-600">Teklifler yükleniyor...</p>
@@ -411,9 +433,9 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
               ) : bids.length === 0 ? (
                 <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center">
                   <MessageCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                  <p className="font-medium text-gray-900">Henüz teklif gelmedi</p>
+                  <p className="text-xl font-medium text-gray-900">Henüz teklif gelmedi</p>
                   <p className="mt-2 text-sm text-gray-500">
-                    Ustalar ilanınızı görüntülediğinde teklif verecekler
+                    Ustalar ilanınızı görüntülediğinde buradan teklifleri görebileceksiniz
                   </p>
                 </div>
               ) : (
