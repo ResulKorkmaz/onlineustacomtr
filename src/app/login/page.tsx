@@ -96,11 +96,12 @@ function LoginForm() {
       } else {
         setError(error.message);
       }
+      setLoading(false);
     } else {
-      router.push(redirectPath);
+      // Başarılı giriş - hard redirect ile admin panele git
+      console.log("[Login Success] Redirecting to:", redirectPath);
+      window.location.href = redirectPath;
     }
-    
-    setLoading(false);
   }
 
   if (sent) {
