@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 
+export const revalidate = 30; // 30 saniyede bir güncelle
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

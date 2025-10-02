@@ -48,12 +48,18 @@ export async function updateSession(request: NextRequest) {
 
   // Onboarding kontrolü - eğer profil yoksa yönlendir
   if (user && !request.nextUrl.pathname.startsWith("/onboarding")) {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
+    // Hata varsa ve "not found" değilse logla
+    if (profileError && profileError.code !== "PGRST116") {
+      console.error("[Middleware] Profile fetch error:", profileError);
+    }
+
+    // Profil yoksa onboarding'e yönlendir
     if (!profile) {
       const onboardingUrl = request.nextUrl.clone();
       onboardingUrl.pathname = "/onboarding";

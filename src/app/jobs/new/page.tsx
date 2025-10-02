@@ -53,7 +53,15 @@ export default function NewJobPage() {
       .single();
 
     if (submitError) {
-      setError(submitError.message);
+      // Kullanıcı dostu hata mesajları
+      if (submitError.message.includes("günlük") || submitError.message.includes("gün")) {
+        setError(submitError.message);
+      } else if (submitError.message.includes("limit")) {
+        setError(submitError.message);
+      } else {
+        setError("İlan oluşturulamadı. Lütfen tekrar deneyin.");
+      }
+      console.error("[JobCreate] Error:", submitError);
     } else if (data) {
       router.push(`/jobs/${data.id}`);
     }

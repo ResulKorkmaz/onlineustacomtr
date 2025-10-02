@@ -106,6 +106,14 @@ export const LIMITS = {
   MAX_GALLERY_IMAGES: 10,
 } as const;
 
+// Pagination limits
+export const PAGINATION = {
+  HOME_JOBS_LIMIT: 9,
+  JOBS_PER_PAGE: 20,
+  BIDS_PER_PAGE: 10,
+  NOTIFICATIONS_PER_PAGE: 20,
+} as const;
+
 // Roller
 export const USER_ROLES = {
   CUSTOMER: "customer",

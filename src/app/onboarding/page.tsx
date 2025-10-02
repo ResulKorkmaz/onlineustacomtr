@@ -5,11 +5,9 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-type Role = "customer" | "provider" | "";
 type Kind = "individual" | "company" | "";
 
 export default function OnboardingPage() {
-  const [role] = useState<Role>("provider"); // Sabit: Hizmet Veren
   const [kind, setKind] = useState<Kind>("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();

@@ -90,6 +90,7 @@ export default function RegisterPage() {
       }, 500);
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.email, formData.phone, step]);
 
   const handleNext = () => {
@@ -206,22 +207,14 @@ export default function RegisterPage() {
         return;
       }
 
-      // 2. Belge yükleme (şirket ise)
-      let documentUrl = null;
+      // 2. Belge yükleme (şirket ise) - gelecekte kullanılacak
       if (formData.kind === "company" && formData.documentFile) {
         const fileExt = formData.documentFile.name.split(".").pop();
         const fileName = `${authData.user.id}-${Date.now()}.${fileExt}`;
         
-        const { error: uploadError } = await supabase.storage
+        await supabase.storage
           .from("documents")
           .upload(`company-docs/${fileName}`, formData.documentFile);
-
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage
-            .from("documents")
-            .getPublicUrl(`company-docs/${fileName}`);
-          documentUrl = urlData.publicUrl;
-        }
       }
 
       // 3. Profil oluşturma (Admin API kullanarak RLS bypass)
@@ -273,9 +266,10 @@ export default function RegisterPage() {
         router.push("/dashboard/profile/individual");
       }
 
-    } catch (err: any) {
+    } catch (err) {
       console.error("Registration error:", err);
-      setError(err.message || "Kayıt sırasında bir hata oluştu");
+      const message = err instanceof Error ? err.message : "Kayıt sırasında bir hata oluştu";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -544,7 +538,7 @@ export default function RegisterPage() {
                     </Select>
                     {formData.city && !DISTRICTS[formData.city]?.length && (
                       <p className="mt-2 text-xs text-gray-500">
-                        Bu il için detaylı ilçe listesi henüz eklenmemiş, "Merkez" seçebilirsiniz.
+                        Bu il için detaylı ilçe listesi henüz eklenmemiş, &quot;Merkez&quot; seçebilirsiniz.
                       </p>
                     )}
                   </div>

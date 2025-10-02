@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:types": "supabase gen types typescript --project-id zqvdnujpbbrwhnsylgmq > src/lib/types/database.types.ts",
+    "db:reset": "supabase db reset",
+    "db:migrate": "supabase migration up"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

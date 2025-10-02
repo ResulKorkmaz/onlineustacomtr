@@ -3,18 +3,40 @@ import JobCard from "@/components/jobs/job-card";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PAGINATION } from "@/lib/constants";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "OnlineUsta - İhtiyacınız Olan Ustayı Bulun",
+  description:
+    "Güvenilir ustalar, şeffaf fiyatlandırma. Elektrikçi, tesisatçı, boyacı ve daha fazlası. Türkiye'nin her yerinden profesyonel hizmet.",
+  keywords: ["usta", "elektrikçi", "tesisatçı", "boyacı", "tamir", "hizmet"],
+  openGraph: {
+    title: "OnlineUsta - İhtiyacınız Olan Ustayı Bulun",
+    description: "Güvenilir ustalar, şeffaf fiyatlandırma.",
+    type: "website",
+    locale: "tr_TR",
+    siteName: "OnlineUsta",
+  },
+};
 
 export const revalidate = 60; // 60 saniyede bir yenile
 
 export default async function HomePage() {
   const supabase = await createClient();
-  
+
   const { data: jobs } = await supabase
     .from("jobs")
-    .select("*")
+    .select(
+      `
+      *,
+      customer:profiles!customer_id(full_name, company_name, avatar_url),
+      category:categories(name, slug, icon_name)
+    `
+    )
     .eq("status", "open")
     .order("created_at", { ascending: false })
-    .limit(9);
+    .limit(PAGINATION.HOME_JOBS_LIMIT);
 
   return (
     <main className="flex-1">

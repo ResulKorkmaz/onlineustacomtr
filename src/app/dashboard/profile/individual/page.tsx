@@ -9,13 +9,13 @@ import { useRouter } from "next/navigation";
 import { 
   Phone, Mail, MapPin, Star, Edit, Save, X, 
   Briefcase, Award, CheckCircle, Clock, TrendingUp,
-  Settings, User, Shield, Calendar
+  Settings, User, Calendar
 } from "lucide-react";
+import type { Profile } from "@/lib/types/database.types";
 
 export default function IndividualProfilePage() {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "edit">("overview");
   const router = useRouter();
@@ -31,6 +31,7 @@ export default function IndividualProfilePage() {
 
   useEffect(() => {
     loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadProfile = async () => {
@@ -72,6 +73,8 @@ export default function IndividualProfilePage() {
   };
 
   const handleSave = async () => {
+    if (!profile) return;
+    
     setSaving(true);
     try {
       const { error } = await supabase
@@ -82,7 +85,7 @@ export default function IndividualProfilePage() {
       if (error) throw error;
 
       await loadProfile();
-      setEditing(false);
+      setActiveTab("overview");
     } catch (error) {
       console.error("Error updating profile:", error);
       alert("Profil güncellenirken hata oluştu");
@@ -91,7 +94,7 @@ export default function IndividualProfilePage() {
     }
   };
 
-  if (loading) {
+  if (loading || !profile) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">

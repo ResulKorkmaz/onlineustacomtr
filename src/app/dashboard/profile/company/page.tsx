@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
+import type { Profile } from "@/lib/types/database.types";
 import { Phone, Mail, MapPin, Star, Edit, Save, X, Building2, FileText, Shield } from "lucide-react";
 
 export default function CompanyProfilePage() {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -25,10 +26,6 @@ export default function CompanyProfilePage() {
     district: "",
     tax_id: "",
   });
-
-  useEffect(() => {
-    loadProfile();
-  }, []);
 
   const loadProfile = async () => {
     try {
@@ -71,6 +68,8 @@ export default function CompanyProfilePage() {
   };
 
   const handleSave = async () => {
+    if (!profile) return;
+    
     setSaving(true);
     try {
       const { error } = await supabase
@@ -90,7 +89,7 @@ export default function CompanyProfilePage() {
     }
   };
 
-  if (loading) {
+  if (loading || !profile) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -121,6 +120,7 @@ export default function CompanyProfilePage() {
                 </Button>
                 <Button
                   onClick={() => {
+                    if (!profile) return;
                     setEditing(false);
                     setEditData({
                       company_name: profile.company_name || "",
@@ -319,7 +319,7 @@ export default function CompanyProfilePage() {
           {/* Action Buttons */}
           <div className="mt-6 flex gap-4">
             <Button onClick={() => router.push("/dashboard")} variant="outline">
-              Dashboard'a Dön
+              Dashboard&apos;a Dön
             </Button>
             <Button onClick={() => router.push("/dashboard/jobs")} className="flex-1">
               Projeleri Görüntüle
