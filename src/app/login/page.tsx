@@ -71,7 +71,15 @@ function LoginForm() {
       localStorage.setItem("onboarding_role", userType);
     }
 
-    const redirectPath = redirect === "onboarding" ? "/customer/register" : "/dashboard";
+    // Redirect path belirleme
+    let redirectPath = "/dashboard";
+    if (redirect === "onboarding") {
+      redirectPath = "/customer/register";
+    } else if (redirect === "admin") {
+      redirectPath = "/admin";
+    } else if (redirect) {
+      redirectPath = `/${redirect}`;
+    }
 
     // E-posta ve şifre ile giriş
     const { error } = await supabase.auth.signInWithPassword({
@@ -121,9 +129,23 @@ function LoginForm() {
     <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border bg-white p-8 shadow-sm">
         <h1 className="mb-6 text-2xl font-bold">
-          {redirect === "onboarding" ? "Kayıt Ol" : resetMode ? "Şifre Sıfırlama" : "Giriş Yap"}
+          {redirect === "admin" 
+            ? "🛡️ Admin Panel Giriş" 
+            : redirect === "onboarding" 
+            ? "Kayıt Ol" 
+            : resetMode 
+            ? "Şifre Sıfırlama" 
+            : "Giriş Yap"}
         </h1>
         
+        {redirect === "admin" && (
+          <div className="mb-6 rounded-lg bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 p-4">
+            <p className="text-sm font-medium text-sky-900">
+              🔐 Admin paneline erişim için yetkiniz olmalıdır.
+            </p>
+          </div>
+        )}
+
         {redirect === "onboarding" && (
           <div className="mb-6 rounded-lg bg-sky-50 p-4">
             <p className="text-sm text-sky-900">
@@ -139,7 +161,7 @@ function LoginForm() {
         )}
         
         <form onSubmit={handleLogin} className="space-y-4">
-          {!resetMode && redirect !== "onboarding" && (
+          {!resetMode && redirect !== "onboarding" && redirect !== "admin" && (
             <div>
               <label className="mb-3 block text-sm font-medium">Giriş Türü</label>
               <div className="grid grid-cols-2 gap-3">
