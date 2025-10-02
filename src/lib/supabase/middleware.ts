@@ -46,11 +46,35 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Admin paneli auth kontrolü
+  if (!user && request.nextUrl.pathname.startsWith("/admin")) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    redirectUrl.searchParams.set("redirect", "admin");
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Profil kontrolü yapılmayacak sayfalar
+  const skipProfileCheck = [
+    "/customer/register",
+    "/provider/register",
+    "/login",
+    "/signup",
+    "/admin", // Admin paneli kendi authorization'ını yapıyor
+    "/api/",
+    "/_next/",
+    "/favicon.ico"
+  ];
+
+  const shouldSkipProfileCheck = skipProfileCheck.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  );
+
   // Onboarding kontrolü - eğer profil yoksa yönlendir
-  if (user && !request.nextUrl.pathname.startsWith("/customer/register")) {
+  if (user && !shouldSkipProfileCheck) {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, admin_role")
       .eq("id", user.id)
       .single();
 
@@ -60,6 +84,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Profil yoksa customer register'a yönlendir
+    // AMA admin kullanıcıları hariç
     if (!profile) {
       const registerUrl = request.nextUrl.clone();
       registerUrl.pathname = "/customer/register";
