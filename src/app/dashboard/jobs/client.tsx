@@ -325,39 +325,42 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
               </div>
 
               {/* Main Content */}
-              <Link href={`/jobs/${job.id}`} className="block p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 transition group-hover:text-sky-600">
-                      {job.title}
-                    </h3>
-                    <p className="mt-2 line-clamp-2 text-gray-600">
-                      {job.description}
-                    </p>
+              <Link href={`/jobs/${job.id}`} className="block p-4 md:p-6">
+                {/* İlan Başlığı */}
+                <h3 className="text-lg md:text-xl font-semibold text-gray-900 transition group-hover:text-sky-600 mb-3">
+                  {job.title}
+                </h3>
 
-                    {/* Info Cards */}
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {/* İlan Açıklaması - Desktop */}
+                <p className="hidden md:block mt-2 mb-4 line-clamp-2 text-gray-600">
+                  {job.description}
+                </p>
+
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    {/* Info Cards - Mobilde 2 sütun, Tablet+ 4 sütun */}
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2">
                       {/* Kategori */}
                       {job.category && (
-                        <div className="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-2">
-                          <Tag className="h-4 w-4 flex-shrink-0 text-purple-600" />
-                          <span className="truncate text-sm font-medium text-purple-900">{job.category}</span>
+                        <div className="flex items-center gap-1.5 rounded-lg bg-purple-50 px-2 py-1.5 min-w-0">
+                          <Tag className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-purple-600" />
+                          <span className="truncate text-xs md:text-sm font-medium text-purple-900">{job.category}</span>
                         </div>
                       )}
 
                       {/* Konum */}
-                      <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2">
-                        <MapPin className="h-4 w-4 flex-shrink-0 text-blue-600" />
-                        <span className="truncate text-sm font-medium text-blue-900">
+                      <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-2 py-1.5 min-w-0">
+                        <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-blue-600" />
+                        <span className="truncate text-xs md:text-sm font-medium text-blue-900">
                           {job.city}{job.district && `, ${job.district}`}
                         </span>
                       </div>
 
                       {/* Bütçe */}
                       {job.budget_min && (
-                        <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2">
-                          <DollarSign className="h-4 w-4 flex-shrink-0 text-green-600" />
-                          <span className="truncate text-sm font-medium text-green-900">
+                        <div className="flex items-center gap-1.5 rounded-lg bg-green-50 px-2 py-1.5 min-w-0">
+                          <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-green-600" />
+                          <span className="truncate text-xs md:text-sm font-medium text-green-900">
                             ₺{job.budget_min.toLocaleString()}-₺{job.budget_max.toLocaleString()}
                           </span>
                         </div>
@@ -365,9 +368,9 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
 
                       {/* Tarih */}
                       {job.job_date && (
-                        <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-2">
-                          <Calendar className="h-4 w-4 flex-shrink-0 text-orange-600" />
-                          <span className="truncate text-sm font-medium text-orange-900">
+                        <div className="flex items-center gap-1.5 rounded-lg bg-orange-50 px-2 py-1.5 min-w-0">
+                          <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-orange-600" />
+                          <span className="truncate text-xs md:text-sm font-medium text-orange-900">
                             {new Date(job.job_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
                             {job.job_time && ` ${job.job_time}`}
                           </span>
@@ -377,15 +380,15 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
 
                     {/* Provider için: Müşteri bilgisi */}
                     {isProvider && job.customer && (
-                      <div className="mt-4 rounded-lg border bg-gray-50 px-4 py-3">
-                        <p className="text-sm text-gray-600">
+                      <div className="mt-3 rounded-lg border bg-gray-50 px-3 py-2">
+                        <p className="text-xs md:text-sm text-gray-600">
                           İlan Veren: <span className="font-semibold text-gray-900">{job.customer.full_name}</span>
                         </p>
                       </div>
                     )}
                   </div>
 
-                  {/* Teklif Sayısı - Müşteri için büyük göster */}
+                  {/* Teklif Sayısı - Müşteri için */}
                   {!isProvider && (
                     <button
                       onClick={(e) => {
@@ -393,14 +396,14 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
                         e.stopPropagation();
                         loadBids(job);
                       }}
-                      className="flex flex-col items-center gap-2 rounded-xl bg-gradient-to-br from-sky-50 to-blue-100 px-6 py-4 transition hover:shadow-md"
+                      className="flex flex-col items-center gap-1 md:gap-2 rounded-xl bg-gradient-to-br from-sky-50 to-blue-100 px-3 md:px-6 py-2 md:py-4 transition hover:shadow-md flex-shrink-0"
                     >
-                      <MessageCircle className="h-6 w-6 text-sky-600" />
+                      <MessageCircle className="h-4 w-4 md:h-6 md:w-6 text-sky-600" />
                       <div className="text-center">
-                        <p className="text-3xl font-bold text-sky-700">{job.bid_count}</p>
-                        <p className="text-xs text-gray-600">Teklif</p>
+                        <p className="text-xl md:text-3xl font-bold text-sky-700">{job.bid_count}</p>
+                        <p className="text-[10px] md:text-xs text-gray-600">Teklif</p>
                       </div>
-                      <span className="text-xs text-sky-600 hover:underline">Görüntüle</span>
+                      <span className="hidden md:block text-xs text-sky-600 hover:underline">Görüntüle</span>
                     </button>
                   )}
                 </div>
