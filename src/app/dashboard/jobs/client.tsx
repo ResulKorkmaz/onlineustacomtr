@@ -342,82 +342,33 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
 
               {/* Main Content */}
               <div className="p-4 md:p-6">
-                <Link href={`/jobs/${job.id}`} className="block">
-                  {/* İlan Başlığı */}
-                  <h3 className="text-lg md:text-xl font-semibold text-gray-900 transition group-hover:text-sky-600 mb-3">
-                    {job.title}
-                  </h3>
-                </Link>
-
-                {/* İlan Açıklaması - Tüm Cihazlarda */}
-                <div className="mb-3">
-                  <p className={`text-sm md:text-base text-gray-600 ${expandedDescriptions.has(job.id) ? '' : 'line-clamp-2'}`}>
-                    {job.description}
-                  </p>
-                  {job.description && job.description.length > 100 && (
-                    <button
-                      onClick={(e) => toggleDescription(job.id, e)}
-                      className="mt-1 text-xs md:text-sm font-medium text-sky-600 hover:text-sky-700 hover:underline"
-                    >
-                      {expandedDescriptions.has(job.id) ? 'Daha Az' : 'Devamı'}
-                    </button>
-                  )}
-                </div>
-
-                <Link href={`/jobs/${job.id}`} className="block">
-                <div className="flex items-start justify-between gap-3">
+                {/* Üst Kısım: Başlık + Açıklama + Teklif Butonu (Mobilde yan yana, Desktop'ta dikey) */}
+                <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex-1 min-w-0">
-                    {/* Info Cards - Mobilde 2 sütun, Tablet+ 4 sütun */}
-                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                      {/* Kategori */}
-                      {job.category && (
-                        <div className="flex items-center gap-1.5 rounded-lg bg-purple-50 px-2 py-1.5 min-w-0">
-                          <Tag className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-purple-600" />
-                          <span className="truncate text-xs md:text-sm font-medium text-purple-900">{job.category}</span>
-                        </div>
-                      )}
+                    <Link href={`/jobs/${job.id}`} className="block">
+                      {/* İlan Başlığı */}
+                      <h3 className="text-lg md:text-xl font-semibold text-gray-900 transition group-hover:text-sky-600 mb-3">
+                        {job.title}
+                      </h3>
+                    </Link>
 
-                      {/* Konum */}
-                      <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-2 py-1.5 min-w-0">
-                        <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-blue-600" />
-                        <span className="truncate text-xs md:text-sm font-medium text-blue-900">
-                          {job.city}{job.district && `, ${job.district}`}
-                        </span>
-                      </div>
-
-                      {/* Bütçe */}
-                      {job.budget_min && (
-                        <div className="flex items-center gap-1.5 rounded-lg bg-green-50 px-2 py-1.5 min-w-0">
-                          <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-green-600" />
-                          <span className="truncate text-xs md:text-sm font-medium text-green-900">
-                            ₺{job.budget_min.toLocaleString()}-₺{job.budget_max.toLocaleString()}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Tarih */}
-                      {job.job_date && (
-                        <div className="flex items-center gap-1.5 rounded-lg bg-orange-50 px-2 py-1.5 min-w-0">
-                          <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-orange-600" />
-                          <span className="truncate text-xs md:text-sm font-medium text-orange-900">
-                            {new Date(job.job_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
-                            {job.job_time && ` ${job.job_time}`}
-                          </span>
-                        </div>
+                    {/* İlan Açıklaması - Tüm Cihazlarda */}
+                    <div className="mb-0">
+                      <p className={`text-sm md:text-base text-gray-600 ${expandedDescriptions.has(job.id) ? '' : 'line-clamp-2'}`}>
+                        {job.description}
+                      </p>
+                      {job.description && job.description.length > 100 && (
+                        <button
+                          onClick={(e) => toggleDescription(job.id, e)}
+                          className="mt-1 text-xs md:text-sm font-medium text-sky-600 hover:text-sky-700 hover:underline"
+                        >
+                          {expandedDescriptions.has(job.id) ? 'Daha Az' : 'Devamı'}
+                        </button>
                       )}
                     </div>
-
-                    {/* Provider için: Müşteri bilgisi */}
-                    {isProvider && job.customer && (
-                      <div className="mt-3 rounded-lg border bg-gray-50 px-3 py-2">
-                        <p className="text-xs md:text-sm text-gray-600">
-                          İlan Veren: <span className="font-semibold text-gray-900">{job.customer.full_name}</span>
-                        </p>
-                      </div>
-                    )}
                   </div>
 
-                  {/* Teklif Sayısı - Müşteri için */}
+                  {/* Teklif Sayısı - Müşteri için (Mobilde üstte sağda, desktop'ta da sağda) */}
                   {!isProvider && (
                     <button
                       onClick={(e) => {
@@ -436,6 +387,57 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
                     </button>
                   )}
                 </div>
+
+                {/* Alt Kısım: Info Kartları */}
+                <Link href={`/jobs/${job.id}`} className="block">
+                  {/* Info Cards - Mobilde 2 sütun, Desktop'ta 4 sütun */}
+                  <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                    {/* Kategori */}
+                    {job.category && (
+                      <div className="flex items-center gap-1.5 rounded-lg bg-purple-50 px-2 py-1.5 min-w-0">
+                        <Tag className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-purple-600" />
+                        <span className="truncate text-xs md:text-sm font-medium text-purple-900">{job.category}</span>
+                      </div>
+                    )}
+
+                    {/* Konum */}
+                    <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-2 py-1.5 min-w-0">
+                      <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-blue-600" />
+                      <span className="truncate text-xs md:text-sm font-medium text-blue-900">
+                        {job.city}{job.district && `, ${job.district}`}
+                      </span>
+                    </div>
+
+                    {/* Bütçe */}
+                    {job.budget_min && (
+                      <div className="flex items-center gap-1.5 rounded-lg bg-green-50 px-2 py-1.5 min-w-0">
+                        <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-green-600" />
+                        <span className="truncate text-xs md:text-sm font-medium text-green-900">
+                          ₺{job.budget_min.toLocaleString()}-₺{job.budget_max.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Tarih */}
+                    {job.job_date && (
+                      <div className="flex items-center gap-1.5 rounded-lg bg-orange-50 px-2 py-1.5 min-w-0">
+                        <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0 text-orange-600" />
+                        <span className="truncate text-xs md:text-sm font-medium text-orange-900">
+                          {new Date(job.job_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+                          {job.job_time && ` ${job.job_time}`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Provider için: Müşteri bilgisi */}
+                  {isProvider && job.customer && (
+                    <div className="mt-3 rounded-lg border bg-gray-50 px-3 py-2">
+                      <p className="text-xs md:text-sm text-gray-600">
+                        İlan Veren: <span className="font-semibold text-gray-900">{job.customer.full_name}</span>
+                      </p>
+                    </div>
+                  )}
                 </Link>
               </div>
             </div>
