@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
-import { MapPin, Calendar, DollarSign, Clock, Tag, User, MessageCircle, CheckCircle } from "lucide-react";
+import { MapPin, Calendar, DollarSign, Clock, Tag, User, MessageCircle, CheckCircle, ArrowLeft, Home } from "lucide-react";
 import type { Job, Bid } from "@/lib/types/database.types";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface Props {
   job: Job;
@@ -21,6 +23,7 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const supabase = createClient();
+  const router = useRouter();
 
   const isOwner = userId && userId === job.customer_id;
 
@@ -54,6 +57,29 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-5xl space-y-6">
+          {/* Breadcrumb Navigation */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-white hover:text-gray-900 transition"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Geri Dön
+            </button>
+            
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Link href="/" className="hover:text-gray-900 transition">
+                <Home className="h-4 w-4" />
+              </Link>
+              <span>/</span>
+              <Link href="/jobs" className="hover:text-gray-900 transition">
+                İlanlar
+              </Link>
+              <span>/</span>
+              <span className="font-medium text-gray-900">{job.title}</span>
+            </div>
+          </div>
+
           {/* Header Card */}
           <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
             {/* Status Badge */}
