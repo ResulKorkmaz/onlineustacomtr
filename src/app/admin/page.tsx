@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import AdminDashboardClient from "./page-client";
 
+// Force dynamic rendering for real-time stats
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
