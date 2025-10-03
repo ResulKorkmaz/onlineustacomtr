@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+// Force Vercel rebuild - cache buster
+// Last updated: 2025-10-03T23:00:00Z
 const nextConfig: NextConfig = {
   // Image optimization
   images: {

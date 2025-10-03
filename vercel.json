@@ -6,6 +6,10 @@
   "outputDirectory": ".next",
   "git": {
     "deploymentEnabled": true
+  },
+  "github": {
+    "silent": false,
+    "autoJobCancelation": false
   }
 }
 
