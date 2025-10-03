@@ -36,6 +36,8 @@ export interface Profile {
   average_rating: number | null;
   total_reviews_count: number;
   is_admin: boolean;
+  admin_role: string | null;
+  is_super_admin: boolean;
   is_active: boolean;
   is_verified: boolean;
   created_at: string;
@@ -70,12 +72,16 @@ export interface Job {
   title: string;
   description: string;
   category_id: number | null;
+  category: string | null;
   city: string;
   district: string | null;
   address_detail: string | null;
   budget_min: number | null;
   budget_max: number | null;
   budget_currency: string;
+  job_date: string | null;
+  job_time: string | null;
+  only_price_research: boolean;
   status: JobStatus;
   bid_count: number;
   view_count: number;
@@ -94,6 +100,7 @@ export interface Bid {
   currency: string;
   message: string;
   status: BidStatus;
+  edit_count: number;
   delivery_days: number | null;
   created_at: string;
   updated_at: string;
@@ -126,7 +133,7 @@ export interface Review {
 }
 
 // Extended types with relations
-export interface JobWithDetails extends Job {
+export interface JobWithDetails extends Omit<Job, 'category'> {
   customer?: Profile;
   category?: Category;
   bids?: Bid[];

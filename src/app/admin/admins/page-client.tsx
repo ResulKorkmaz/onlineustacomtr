@@ -374,7 +374,7 @@ export default function AdminManagementClient({
 
             <div className="p-6">
               <p className="text-gray-600">
-                <span className="font-semibold text-gray-900">{selectedAdmin.full_name}</span> adlı admin'i silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+                <span className="font-semibold text-gray-900">{selectedAdmin.full_name}</span> adlı admin&apos;i silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
               </p>
 
               {error && (
