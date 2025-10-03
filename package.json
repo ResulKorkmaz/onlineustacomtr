@@ -2,6 +2,7 @@
   "name": "onlineusta.com.tr",
   "version": "0.1.0",
   "private": true,
+  "__vercel_build_trigger": "2025-10-03T23:10:00Z",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
