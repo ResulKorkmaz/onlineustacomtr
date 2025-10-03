@@ -1,0 +1,23 @@
+# Vercel Force Deploy Trigger
+# This file forces Vercel to deploy
+
+TIMESTAMP: 2025-10-03T23:05:00Z
+BUILD_ID: FORCE_ADMIN_FIX_v3
+CACHE_BUSTER: 1696370700000
+
+## Admin Routes MUST Deploy:
+- /admin
+- /admin/users
+- /admin/jobs
+- /admin/bids
+- /admin/admins
+- /admin/logs
+- /admin/settings
+
+## Critical Fix:
+All admin routes have:
+- export const dynamic = 'force-dynamic'
+- export const revalidate = 0
+
+DEPLOY NOW! 🚀
+
