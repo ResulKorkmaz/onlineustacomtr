@@ -1,3 +1,6 @@
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function AdminLogsPage() {
   return (
     <div className="p-6 lg:p-8">

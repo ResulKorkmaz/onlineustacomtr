@@ -1,3 +1,6 @@
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function AdminBidsPage() {
   return (
     <div className="p-6 lg:p-8">
