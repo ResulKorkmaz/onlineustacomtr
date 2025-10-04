@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, Plus, Home, User, Briefcase, MessageSquare, CheckCircle, Wallet } from "lucide-react";
+import { Menu, X, Plus, Home, User, Briefcase } from "lucide-react";
 
 interface DashboardLayoutClientProps {
   isProvider: boolean;
@@ -19,13 +19,9 @@ export default function DashboardLayoutClient({ isProvider, children }: Dashboar
     { href: "/dashboard", label: "Ana Sayfa", icon: Home },
     { href: "/dashboard/profile", label: "Profil", icon: User },
     { href: "/dashboard/jobs", label: isProvider ? "İlanlar" : "İlanlarım", icon: Briefcase },
-    { href: "/dashboard/messages", label: "Mesajlarım", icon: MessageSquare },
-    { href: "/dashboard/completed", label: "Tamamlananlar", icon: CheckCircle },
   ];
 
-  if (isProvider) {
-    menuItems.push({ href: "/dashboard/balance", label: "Bakiyem", icon: Wallet });
-  }
+  // Yakında eklenecek: Mesajlar, Tamamlananlar, Bakiye
 
   return (
     <div className="min-h-screen bg-gray-50">
