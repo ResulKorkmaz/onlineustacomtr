@@ -78,8 +78,6 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/jobs", label: "İlanlar" },
-    { href: "/how-it-works", label: "Nasıl Çalışır?" },
-    { href: "/categories", label: "Kategoriler" },
   ];
 
   return (
