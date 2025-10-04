@@ -9,8 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { 
   Phone, Mail, MapPin, Star, Edit, Save, X, 
   Briefcase, Award, CheckCircle, Clock, TrendingUp,
-  Settings, User, Calendar, Wallet, MessageSquare, 
-  HelpCircle, UserCheck, Shield, LogOut
+  Settings, User, Calendar, FileText, BookOpen
 } from "lucide-react";
 import type { Profile } from "@/lib/types/database.types";
 
@@ -21,7 +20,7 @@ interface IndividualProfileClientProps {
 export default function IndividualProfileClient({ initialProfile }: IndividualProfileClientProps) {
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "edit">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "edit" | "experience" | "portfolio">("overview");
   const router = useRouter();
   const supabase = createClient();
 
@@ -66,7 +65,7 @@ export default function IndividualProfileClient({ initialProfile }: IndividualPr
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
-        {/* Sidebar */}
+        {/* Sidebar - SADELEŞTİRİLDİ */}
         <div className="hidden w-72 border-r bg-white lg:block">
           <div className="sticky top-0 p-6">
             {/* Profile Header in Sidebar */}
@@ -84,7 +83,7 @@ export default function IndividualProfileClient({ initialProfile }: IndividualPr
               )}
             </div>
 
-            {/* Navigation */}
+            {/* Navigation - SADECE PROFİL İLE İLGİLİ */}
             <nav className="space-y-2">
               <button
                 onClick={() => setActiveTab("overview")}
@@ -106,17 +105,39 @@ export default function IndividualProfileClient({ initialProfile }: IndividualPr
                     : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <Settings className="h-5 w-5" />
+                <Edit className="h-5 w-5" />
                 <span>Bilgileri Düzenle</span>
               </button>
 
               <button
-                onClick={() => router.push("/dashboard/jobs")}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
+                onClick={() => setActiveTab("experience")}
+                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition ${
+                  activeTab === "experience"
+                    ? "bg-sky-50 text-sky-700 font-medium"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
               >
-                <Briefcase className="h-5 w-5" />
-                <span>İşlerim</span>
+                <BookOpen className="h-5 w-5" />
+                <span>Tecrübe & Uzmanlık</span>
               </button>
+
+              <button
+                onClick={() => setActiveTab("portfolio")}
+                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition ${
+                  activeTab === "portfolio"
+                    ? "bg-sky-50 text-sky-700 font-medium"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <FileText className="h-5 w-5" />
+                <span>Sertifikalar & Belgeler</span>
+              </button>
+
+              {/* Divider */}
+              <div className="my-4 border-t"></div>
+
+              {/* Hızlı Erişim */}
+              <p className="px-4 text-xs font-semibold uppercase text-gray-400">Hızlı Erişim</p>
 
               <button
                 onClick={() => router.push("/dashboard")}
@@ -126,61 +147,20 @@ export default function IndividualProfileClient({ initialProfile }: IndividualPr
                 <span>Ana Sayfa</span>
               </button>
 
-              {/* Divider */}
-              <div className="my-2 border-t"></div>
-
               <button
-                onClick={() => router.push("/dashboard/balance")}
+                onClick={() => router.push("/dashboard/jobs")}
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
               >
-                <Wallet className="h-5 w-5" />
-                <span>Cüzdanım</span>
+                <Briefcase className="h-5 w-5" />
+                <span>İlanlar</span>
               </button>
 
               <button
-                onClick={() => router.push("/dashboard/reviews")}
+                onClick={() => router.push("/dashboard/settings")}
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
               >
-                <MessageSquare className="h-5 w-5" />
-                <span>Müşteri Yorumları</span>
-              </button>
-
-              <button
-                onClick={() => router.push("/dashboard/support")}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
-              >
-                <HelpCircle className="h-5 w-5" />
-                <span>Destek Merkezi</span>
-              </button>
-
-              {/* Divider */}
-              <div className="my-2 border-t"></div>
-
-              <button
-                onClick={() => router.push("/dashboard/switch-to-customer")}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
-              >
-                <UserCheck className="h-5 w-5" />
-                <span>Müşteri Profiline Geç</span>
-              </button>
-
-              <button
-                onClick={() => router.push("/dashboard/privacy")}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-50"
-              >
-                <Shield className="h-5 w-5" />
-                <span>Veri ve Gizlilik</span>
-              </button>
-
-              <button
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  router.push("/");
-                }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-red-600 transition hover:bg-red-50"
-              >
-                <LogOut className="h-5 w-5" />
-                <span>Çıkış Yap</span>
+                <Settings className="h-5 w-5" />
+                <span>Ayarlar</span>
               </button>
             </nav>
 
@@ -249,7 +229,7 @@ export default function IndividualProfileClient({ initialProfile }: IndividualPr
                 <div className="rounded-xl border bg-white shadow-sm">
                   <div className="border-b p-6">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold text-gray-900">Profil Bilgileri</h2>
+                      <h2 className="text-xl font-bold text-gray-900">Kişisel Bilgiler</h2>
                       <Button
                         onClick={() => setActiveTab("edit")}
                         variant="outline"
@@ -294,13 +274,13 @@ export default function IndividualProfileClient({ initialProfile }: IndividualPr
                       <div>
                         <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase text-gray-500">
                           <MapPin className="h-4 w-4" />
-                          Konum Bilgileri
+                          Hizmet Bölgesi
                         </h3>
                         <div className="space-y-3">
                           <div className="flex items-start gap-3">
                             <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400" />
                             <div>
-                              <p className="text-sm text-gray-500">Hizmet Bölgesi</p>
+                              <p className="text-sm text-gray-500">Konum</p>
                               <p className="font-medium text-gray-900">
                                 {profile.city && profile.district
                                   ? `${profile.district}, ${profile.city}`
@@ -335,7 +315,7 @@ export default function IndividualProfileClient({ initialProfile }: IndividualPr
                   </p>
                 </div>
 
-                {/* Activity Timeline (Placeholder) */}
+                {/* Activity Timeline */}
                 <div className="rounded-xl border bg-white p-6 shadow-sm">
                   <h3 className="mb-4 text-lg font-bold text-gray-900">Son Aktiviteler</h3>
                   <div className="space-y-4">
@@ -420,7 +400,7 @@ export default function IndividualProfileClient({ initialProfile }: IndividualPr
                       {/* Location */}
                       <div>
                         <h3 className="mb-4 text-sm font-semibold uppercase text-gray-500">
-                          Konum Bilgileri
+                          Hizmet Bölgesi
                         </h3>
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div>
@@ -496,9 +476,74 @@ export default function IndividualProfileClient({ initialProfile }: IndividualPr
                 </div>
               </div>
             )}
+
+            {/* Experience Tab - YENİ */}
+            {activeTab === "experience" && (
+              <div className="space-y-6">
+                <div className="rounded-xl border bg-white shadow-sm">
+                  <div className="border-b p-6">
+                    <h2 className="text-xl font-bold text-gray-900">Tecrübe & Uzmanlık Alanları</h2>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Uzmanlık alanlarınızı ve tecrübelerinizi ekleyin
+                    </p>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="space-y-6">
+                      {/* Placeholder */}
+                      <div className="rounded-lg bg-sky-50 p-8 text-center">
+                        <BookOpen className="mx-auto h-12 w-12 text-sky-600 mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Tecrübe & Uzmanlık Bölümü
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          Bu bölümde kategorilerinizi, uzmanlık alanlarınızı ve tecrübelerinizi ekleyebileceksiniz.
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Yakında aktif olacak! 🚀
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Portfolio Tab - YENİ */}
+            {activeTab === "portfolio" && (
+              <div className="space-y-6">
+                <div className="rounded-xl border bg-white shadow-sm">
+                  <div className="border-b p-6">
+                    <h2 className="text-xl font-bold text-gray-900">Sertifikalar & Belgeler</h2>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Sertifikalarınızı ve belgelerinizi yükleyin
+                    </p>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="space-y-6">
+                      {/* Placeholder */}
+                      <div className="rounded-lg bg-green-50 p-8 text-center">
+                        <FileText className="mx-auto h-12 w-12 text-green-600 mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Sertifikalar & Belgeler
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          Sertifikalarınızı, ustalık belgelerinizi ve referanslarınızı bu bölümde paylaşabileceksiniz.
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Yakında aktif olacak! 📄
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
