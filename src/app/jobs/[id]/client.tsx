@@ -34,29 +34,44 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
       return;
     }
     
+    console.log("[BidSubmit] Starting...", { userId, jobId: job.id, amount, message });
+    
     setLoading(true);
     setError("");
 
-    const { error: submitError } = await supabase
-      .from("bids")
-      .insert({
-        job_id: job.id,
-        provider_id: userId,
-        amount: parseFloat(amount),
-        message,
-      });
+    try {
+      const { data, error: submitError } = await supabase
+        .from("bids")
+        .insert({
+          job_id: job.id,
+          provider_id: userId,
+          amount: parseFloat(amount),
+          message,
+        })
+        .select();
 
-    if (submitError) {
-      setError(submitError.message);
-    } else {
+      console.log("[BidSubmit] Response:", { data, error: submitError });
+
+      if (submitError) {
+        console.error("[BidSubmit] Error:", submitError);
+        setError(submitError.message || "Teklif gönderilemedi");
+        setLoading(false);
+        return;
+      }
+
+      console.log("[BidSubmit] Success!");
       setAmount("");
       setMessage("");
       setShowBidForm(false);
       alert("Teklifiniz başarıyla gönderildi!");
-      router.refresh();
+      
+      // Sayfayı yenile
+      window.location.reload();
+    } catch (err) {
+      console.error("[BidSubmit] Exception:", err);
+      setError("Beklenmeyen bir hata oluştu");
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
