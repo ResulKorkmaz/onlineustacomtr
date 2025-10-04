@@ -17,23 +17,20 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .single();
 
-  // Profil tipine göre yönlendir
-  if (profile) {
-    if (profile.role === "customer") {
-      redirect("/dashboard/profile/customer");
-    } else if (profile.provider_kind === "individual") {
-      redirect("/dashboard/profile/individual");
-    } else if (profile.provider_kind === "company") {
-      redirect("/dashboard/profile/company");
-    }
+  // Profil yoksa kayıt sayfasına yönlendir
+  if (!profile) {
+    redirect("/customer/register");
   }
 
-  // Fallback
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <p className="text-gray-600">Profil yükleniyor...</p>
-      </div>
-    </div>
-  );
+  // Profil tipine göre yönlendir
+  if (profile.role === "customer") {
+    redirect("/dashboard/profile/customer");
+  } else if (profile.provider_kind === "individual") {
+    redirect("/dashboard/profile/individual");
+  } else if (profile.provider_kind === "company") {
+    redirect("/dashboard/profile/company");
+  }
+
+  // Fallback (role veya provider_kind eksikse)
+  redirect("/customer/register");
 }
