@@ -84,11 +84,11 @@ export default function CompanyProfileClient({ initialProfile, userEmail }: Comp
         <nav className="space-y-1">
           <button
             onClick={() => setActiveTab("overview")}
-            className={\`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition \${
+            className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition ${
               activeTab === "overview"
                 ? "bg-indigo-50 text-indigo-700 font-medium"
                 : "text-gray-700 hover:bg-gray-50"
-            }\`}
+            }`}
           >
             <Building2 className="h-5 w-5" />
             <span>Firma Bilgileri</span>
@@ -96,11 +96,11 @@ export default function CompanyProfileClient({ initialProfile, userEmail }: Comp
           
           <button
             onClick={() => setActiveTab("edit")}
-            className={\`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition \${
+            className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition ${
               activeTab === "edit"
                 ? "bg-indigo-50 text-indigo-700 font-medium"
                 : "text-gray-700 hover:bg-gray-50"
-            }\`}
+            }`}
           >
             <Edit className="h-5 w-5" />
             <span>Bilgileri Düzenle</span>
@@ -108,11 +108,11 @@ export default function CompanyProfileClient({ initialProfile, userEmail }: Comp
 
           <button
             onClick={() => setActiveTab("verification")}
-            className={\`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition \${
+            className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition ${
               activeTab === "verification"
                 ? "bg-indigo-50 text-indigo-700 font-medium"
                 : "text-gray-700 hover:bg-gray-50"
-            }\`}
+            }`}
           >
             <BadgeCheck className="h-5 w-5" />
             <span>Firma Onayı</span>
@@ -225,7 +225,7 @@ export default function CompanyProfileClient({ initialProfile, userEmail }: Comp
                             <p className="text-sm text-gray-500">Konum</p>
                             <p className="font-medium text-gray-900">
                               {profile.city && profile.district
-                                ? \`\${profile.district}, \${profile.city}\`
+                                ? `${profile.district}, ${profile.city}`
                                 : "Belirtilmemiş"}
                             </p>
                           </div>
