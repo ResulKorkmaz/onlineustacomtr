@@ -547,6 +547,24 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
                       <span className="hidden md:block text-xs text-sky-600 hover:underline">Görüntüle</span>
                     </button>
                   )}
+
+                  {/* Teklif Ver - Hizmet Veren için (Mobilde üstte sağda, desktop'ta da sağda) */}
+                  {isProvider && (
+                    <Link
+                      href={`/jobs/${job.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex flex-col items-center justify-center gap-1 md:gap-2 rounded-xl bg-gradient-to-br from-emerald-50 to-green-100 px-4 md:px-8 py-3 md:py-5 transition hover:shadow-lg hover:scale-105 flex-shrink-0 group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-emerald-600" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm md:text-base font-bold text-emerald-700">Teklif Ver</p>
+                        <p className="text-[10px] md:text-xs text-gray-600">{job.bid_count} teklif var</p>
+                      </div>
+                      <span className="hidden md:block text-xs text-emerald-600 group-hover:underline">İncele</span>
+                    </Link>
+                  )}
                 </div>
 
                 {/* Alt Kısım: Info Kartları */}
