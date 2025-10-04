@@ -24,21 +24,25 @@ export default async function DashboardJobsPage() {
   }
 
   let jobs = [];
+  let allCategories: string[] = [];
+  let allCities: string[] = [];
 
   if (profile.role === "provider") {
-    // Provider için: Kendi ilindeki ve kategorilerine uygun ilanları göster
+    // Provider için: TÜM AÇIK İLANLARI GETİR (filtreleme client-side yapılacak)
     const { data } = await supabase
       .from("jobs")
       .select(`
         *,
         customer:profiles!jobs_customer_id_fkey(full_name, city, district)
       `)
-      .eq("city", profile.city)
       .eq("status", "open")
-      .order("created_at", { ascending: false })
-      .limit(20);
+      .order("created_at", { ascending: false });
 
     jobs = data || [];
+
+    // Benzersiz kategoriler ve iller
+    allCategories = [...new Set(jobs.map(j => j.category).filter(Boolean))];
+    allCities = [...new Set(jobs.map(j => j.city).filter(Boolean))];
   } else {
     // Customer için: Kendi ilanlarını göster
     const { data } = await supabase
@@ -54,7 +58,9 @@ export default async function DashboardJobsPage() {
     <DashboardJobsClient 
       jobs={jobs} 
       isProvider={profile.role === "provider"} 
-      city={profile.city}
+      userCity={profile.city}
+      allCategories={allCategories}
+      allCities={allCities}
     />
   );
 }

@@ -59,10 +59,12 @@ interface Bid {
 interface Props {
   jobs: Job[];
   isProvider: boolean;
-  city?: string;
+  userCity?: string;
+  allCategories?: string[];
+  allCities?: string[];
 }
 
-export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
+export default function DashboardJobsClient({ jobs, isProvider, userCity, allCategories = [], allCities = [] }: Props) {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [viewingBidsFor, setViewingBidsFor] = useState<Job | null>(null);
   const [bids, setBids] = useState<Bid[]>([]);
@@ -71,6 +73,12 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(new Set());
+
+  // Filtreleme state'leri
+  const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const router = useRouter();
   const supabase = createClient();
@@ -201,19 +209,172 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
     }
   };
 
+  // FİLTRELEME MANTIJI
+  const filteredJobs = jobs.filter(job => {
+    // Şehir filtresi
+    if (selectedCity !== "all" && job.city !== selectedCity) {
+      return false;
+    }
+
+    // Kategori filtresi
+    if (selectedCategory !== "all" && job.category !== selectedCategory) {
+      return false;
+    }
+
+    // Zaman filtresi
+    if (selectedTimeRange !== "all") {
+      const now = new Date();
+      const jobDate = new Date(job.created_at);
+      const diffMs = now.getTime() - jobDate.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+      const diffDays = diffHours / 24;
+
+      if (selectedTimeRange === "24h" && diffHours > 24) return false;
+      if (selectedTimeRange === "7d" && diffDays > 7) return false;
+      if (selectedTimeRange === "30d" && diffDays > 30) return false;
+    }
+
+    // Arama filtresi
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const titleMatch = job.title.toLowerCase().includes(query);
+      const descMatch = job.description.toLowerCase().includes(query);
+      if (!titleMatch && !descMatch) return false;
+    }
+
+    return true;
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
-          {isProvider ? "İş İlanları" : "İlanlarım"}
+          {isProvider ? "Tüm İş İlanları" : "İlanlarım"}
         </h1>
         <p className="mt-2 text-gray-600">
           {isProvider 
-            ? `${city} ilindeki aktif iş ilanları` 
+            ? `${filteredJobs.length} aktif ilan bulundu` 
             : "Yayınladığınız iş ilanları"}
         </p>
       </div>
+
+      {/* FİLTRELEME BÖLÜMÜ - SADECE HİZMET VERENLER İÇİN */}
+      {isProvider && (
+        <div className="rounded-xl border bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">Filtrele</h2>
+          
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* İl Filtresi */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">İl</label>
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              >
+                <option value="all">Tüm İller</option>
+                {userCity && <option value={userCity}>✓ {userCity} (İlim)</option>}
+                {allCities.filter(c => c !== userCity).map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Kategori Filtresi */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Kategori</label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              >
+                <option value="all">Tüm Kategoriler</option>
+                {allCategories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Zaman Filtresi */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Zaman</label>
+              <select
+                value={selectedTimeRange}
+                onChange={(e) => setSelectedTimeRange(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              >
+                <option value="all">Tüm Zamanlar</option>
+                <option value="24h">Son 24 Saat</option>
+                <option value="7d">Son 7 Gün</option>
+                <option value="30d">Son 30 Gün</option>
+              </select>
+            </div>
+
+            {/* Arama */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Ara</label>
+              <input
+                type="text"
+                placeholder="Başlık veya açıklama..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              />
+            </div>
+          </div>
+
+          {/* Aktif Filtre Durumu */}
+          {(selectedCity !== "all" || selectedCategory !== "all" || selectedTimeRange !== "all" || searchQuery) && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-gray-600">Aktif Filtreler:</span>
+              {selectedCity !== "all" && (
+                <button
+                  onClick={() => setSelectedCity("all")}
+                  className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-sm font-medium text-sky-700 hover:bg-sky-200"
+                >
+                  {selectedCity} <X className="h-3 w-3" />
+                </button>
+              )}
+              {selectedCategory !== "all" && (
+                <button
+                  onClick={() => setSelectedCategory("all")}
+                  className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-sm font-medium text-sky-700 hover:bg-sky-200"
+                >
+                  {selectedCategory} <X className="h-3 w-3" />
+                </button>
+              )}
+              {selectedTimeRange !== "all" && (
+                <button
+                  onClick={() => setSelectedTimeRange("all")}
+                  className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-sm font-medium text-sky-700 hover:bg-sky-200"
+                >
+                  {selectedTimeRange === "24h" ? "Son 24 Saat" : selectedTimeRange === "7d" ? "Son 7 Gün" : "Son 30 Gün"} <X className="h-3 w-3" />
+                </button>
+              )}
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-sm font-medium text-sky-700 hover:bg-sky-200"
+                >
+                  &quot;{searchQuery}&quot; <X className="h-3 w-3" />
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setSelectedCity("all");
+                  setSelectedCategory("all");
+                  setSelectedTimeRange("all");
+                  setSearchQuery("");
+                }}
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 underline"
+              >
+                Tümünü Temizle
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (
@@ -226,7 +387,7 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
       )}
 
       {/* Jobs Grid */}
-      {jobs.length === 0 ? (
+      {filteredJobs.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
             <MessageCircle className="h-8 w-8 text-gray-400" />
@@ -253,7 +414,7 @@ export default function DashboardJobsClient({ jobs, isProvider, city }: Props) {
         </div>
       ) : (
         <div className="grid gap-4">
-          {jobs.map((job) => (
+          {filteredJobs.map((job) => (
             <div
               key={job.id}
               className="group relative overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
