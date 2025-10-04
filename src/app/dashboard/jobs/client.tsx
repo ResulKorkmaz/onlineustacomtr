@@ -456,35 +456,116 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
       ) : (
         <div className="grid gap-4">
           {filteredJobs.map((job) => (
-            <div
-              key={job.id}
-              className="group relative overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
-            >
-              {/* Status Bar */}
-              <div className="border-b bg-gradient-to-r from-gray-50 to-white px-6 py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-                      job.status === "open" 
-                        ? "bg-green-100 text-green-700" 
-                        : job.status === "in_progress"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}>
-                      <span className={`h-2 w-2 rounded-full ${
-                        job.status === "open" ? "bg-green-500 animate-pulse" : "bg-gray-400"
-                      }`} />
-                      {job.status === "open" ? "Açık" : job.status === "in_progress" ? "Devam Ediyor" : "Kapalı"}
-                    </span>
+            isProvider ? (
+              /* ==================== HİZMET VEREN İÇİN İLAN KARTI ==================== */
+              <Link
+                key={job.id}
+                href={`/jobs/${job.id}`}
+                className="group relative overflow-hidden rounded-xl border bg-white transition hover:shadow-lg hover:border-sky-200"
+              >
+                {/* Status Badge - Sol Üst Köşe */}
+                <div className="absolute top-3 left-3 z-10">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 shadow-sm">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                    Açık
+                  </span>
+                </div>
+
+                {/* Teklif Ver Butonu - Sağ Üst Köşe */}
+                <div className="absolute top-3 right-3 z-10">
+                  <div className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1.5 text-white shadow-md hover:shadow-lg transition group-hover:scale-105">
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    <span className="text-xs font-semibold">Teklif Ver</span>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
+                </div>
+
+                {/* Content */}
+                <div className="p-4 pt-12">
+                  {/* Başlık */}
+                  <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2 line-clamp-1 group-hover:text-sky-600 transition">
+                    {job.title}
+                  </h3>
+
+                  {/* Açıklama */}
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                    {job.description}
+                  </p>
+
+                  {/* Bilgiler - 2x2 Grid Mobil, 4 Sütun Desktop */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                    {/* Kategori */}
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <Tag className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 truncate">{job.category || "Genel"}</span>
+                    </div>
+
+                    {/* Şehir */}
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <MapPin className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 truncate">{job.city}</span>
+                    </div>
+
+                    {/* Bütçe */}
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <DollarSign className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 truncate">
+                        {job.budget_min === job.budget_max 
+                          ? `₺${job.budget_min}` 
+                          : `₺${job.budget_min}-${job.budget_max}`}
+                      </span>
+                    </div>
+
+                    {/* Tarih */}
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <Calendar className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 truncate">{formatRelativeTime(job.created_at)}</span>
+                    </div>
+                  </div>
+
+                  {/* Alt Bilgi: Teklif Sayısı */}
+                  <div className="flex items-center justify-between pt-3 border-t">
                     <span className="text-xs text-gray-500">
-                      {formatRelativeTime(job.created_at)}
+                      {job.bid_count > 0 ? `${job.bid_count} teklif var` : "Henüz teklif yok"}
                     </span>
+                    {job.customer && (
+                      <div className="flex items-center gap-1.5">
+                        <User className="h-3 w-3 text-gray-400" />
+                        <span className="text-xs text-gray-600">{job.customer.city}, {job.customer.district}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ) : (
+              /* ==================== MÜŞTERİ İÇİN İLAN KARTI (ESKİ LAYOUT) ==================== */
+              <div
+                key={job.id}
+                className="group relative overflow-hidden rounded-2xl border bg-white transition hover:shadow-lg"
+              >
+                {/* Status Bar */}
+                <div className="border-b bg-gradient-to-r from-gray-50 to-white px-6 py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
+                        job.status === "open" 
+                          ? "bg-green-100 text-green-700" 
+                          : job.status === "in_progress"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-gray-100 text-gray-700"
+                      }`}>
+                        <span className={`h-2 w-2 rounded-full ${
+                          job.status === "open" ? "bg-green-500 animate-pulse" : "bg-gray-400"
+                        }`} />
+                        {job.status === "open" ? "Açık" : job.status === "in_progress" ? "Devam Ediyor" : "Kapalı"}
+                      </span>
+                    </div>
                     
-                    {/* Müşteri için: İlanı Yönet Butonu */}
-                    {!isProvider && (
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-500">
+                        {formatRelativeTime(job.created_at)}
+                      </span>
+                      
+                      {/* Müşteri için: İlanı Yönet Butonu */}
                       <div className="relative">
                         <button
                           onClick={(e) => toggleMenu(job.id, e)}
@@ -537,10 +618,9 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
                           </>
                         )}
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {/* Main Content */}
               <div className="p-4 md:p-6">
@@ -570,42 +650,22 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
                     </div>
                   </div>
 
-                  {/* Teklif Sayısı - Müşteri için (Mobilde üstte sağda, desktop'ta da sağda) */}
-                  {!isProvider && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        loadBids(job);
-                      }}
-                      className="flex flex-col items-center gap-1 md:gap-2 rounded-xl bg-gradient-to-br from-sky-50 to-blue-100 px-3 md:px-6 py-2 md:py-4 transition hover:shadow-md flex-shrink-0"
-                    >
-                      <MessageCircle className="h-4 w-4 md:h-6 md:w-6 text-sky-600" />
-                      <div className="text-center">
-                        <p className="text-xl md:text-3xl font-bold text-sky-700">{job.bid_count}</p>
-                        <p className="text-[10px] md:text-xs text-gray-600">Teklif</p>
-                      </div>
-                      <span className="hidden md:block text-xs text-sky-600 hover:underline">Görüntüle</span>
-                    </button>
-                  )}
-
-                  {/* Teklif Ver - Hizmet Veren için (Mobilde üstte sağda, desktop'ta da sağda) */}
-                  {isProvider && (
-                    <Link
-                      href={`/jobs/${job.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex flex-col items-center justify-center gap-1 md:gap-2 rounded-xl bg-gradient-to-br from-emerald-50 to-green-100 px-4 md:px-8 py-3 md:py-5 transition hover:shadow-lg hover:scale-105 flex-shrink-0 group"
-                    >
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-emerald-600" />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm md:text-base font-bold text-emerald-700">Teklif Ver</p>
-                        <p className="text-[10px] md:text-xs text-gray-600">{job.bid_count} teklif var</p>
-                      </div>
-                      <span className="hidden md:block text-xs text-emerald-600 group-hover:underline">İncele</span>
-                    </Link>
-                  )}
+                  {/* Teklif Sayısı - Müşteri için */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      loadBids(job);
+                    }}
+                    className="flex flex-col items-center gap-1 md:gap-2 rounded-xl bg-gradient-to-br from-sky-50 to-blue-100 px-3 md:px-6 py-2 md:py-4 transition hover:shadow-md flex-shrink-0"
+                  >
+                    <MessageCircle className="h-4 w-4 md:h-6 md:w-6 text-sky-600" />
+                    <div className="text-center">
+                      <p className="text-xl md:text-3xl font-bold text-sky-700">{job.bid_count}</p>
+                      <p className="text-[10px] md:text-xs text-gray-600">Teklif</p>
+                    </div>
+                    <span className="hidden md:block text-xs text-sky-600 hover:underline">Görüntüle</span>
+                  </button>
                 </div>
 
                 {/* Alt Kısım: Info Kartları */}
@@ -660,7 +720,8 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
                   )}
                 </Link>
               </div>
-            </div>
+              </div>
+            )
           ))}
         </div>
       )}
