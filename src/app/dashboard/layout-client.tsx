@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, Plus, Home, User, Briefcase } from "lucide-react";
+import { Menu, X, Plus, Home, User, Briefcase, MessageSquare, CheckCircle, Wallet, Settings } from "lucide-react";
 
 interface DashboardLayoutClientProps {
   isProvider: boolean;
@@ -15,13 +15,26 @@ export default function DashboardLayoutClient({ isProvider, children }: Dashboar
   const router = useRouter();
   const pathname = usePathname();
 
-  const menuItems = [
+  // STANDART HİZMET VEREN MENÜSÜ - ASLA BOZMA!
+  // Kaynak: docs/MENU_STRUCTURE.md
+  const providerMenuItems = [
     { href: "/dashboard", label: "Ana Sayfa", icon: Home },
     { href: "/dashboard/profile", label: "Profil", icon: User },
-    { href: "/dashboard/jobs", label: isProvider ? "İlanlar" : "İlanlarım", icon: Briefcase },
+    { href: "/dashboard/jobs", label: "İlanlar", icon: Briefcase },
+    { href: "/dashboard/bids", label: "Tekliflerim", icon: MessageSquare },
+    { href: "/dashboard/completed", label: "Tamamlananlar", icon: CheckCircle },
+    { href: "/dashboard/balance", label: "Bütçem", icon: Wallet },
+    { href: "/dashboard/settings", label: "Ayarlar", icon: Settings },
   ];
 
-  // Yakında eklenecek: Mesajlar, Tamamlananlar, Bakiye
+  // Müşteri menüleri (geçici)
+  const customerMenuItems = [
+    { href: "/dashboard", label: "Ana Sayfa", icon: Home },
+    { href: "/dashboard/profile", label: "Profil", icon: User },
+    { href: "/dashboard/jobs", label: "İlanlarım", icon: Briefcase },
+  ];
+
+  const menuItems = isProvider ? providerMenuItems : customerMenuItems;
 
   return (
     <div className="min-h-screen bg-gray-50">
