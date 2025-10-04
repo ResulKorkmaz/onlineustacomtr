@@ -79,6 +79,7 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showFilters, setShowFilters] = useState<boolean>(false);
 
   const router = useRouter();
   const supabase = createClient();
@@ -261,10 +262,49 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
 
       {/* FİLTRELEME BÖLÜMÜ - SADECE HİZMET VERENLER İÇİN */}
       {isProvider && (
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Filtrele</h2>
-          
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border bg-white shadow-sm">
+          {/* Filtrele Butonu - Mobilde varsayılan kapalı */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex w-full items-center justify-between p-4 md:p-6 hover:bg-gray-50 transition md:pointer-events-none md:hover:bg-white"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-100">
+                <svg className="h-5 w-5 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <h2 className="text-lg font-semibold text-gray-900">Filtrele</h2>
+                {(selectedCity !== "all" || selectedCategory !== "all" || selectedTimeRange !== "all" || searchQuery) && (
+                  <p className="text-xs text-sky-600">
+                    {[
+                      selectedCity !== "all" && "İl",
+                      selectedCategory !== "all" && "Kategori",
+                      selectedTimeRange !== "all" && "Zaman",
+                      searchQuery && "Arama"
+                    ].filter(Boolean).join(", ")} aktif
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            {/* Aşağı/Yukarı Ok - Sadece Mobilde */}
+            <div className="md:hidden">
+              <svg
+                className={`h-5 w-5 text-gray-400 transition-transform ${showFilters ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
+
+          {/* Filtre Alanları - Mobilde açılır/kapanır, Desktop'ta her zaman açık */}
+          <div className={`${showFilters ? "block" : "hidden"} md:block border-t p-4 md:p-6 md:pt-0 md:border-t-0`}>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* İl Filtresi */}
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">İl</label>
@@ -322,11 +362,11 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
               />
             </div>
-          </div>
+            </div>
 
-          {/* Aktif Filtre Durumu */}
-          {(selectedCity !== "all" || selectedCategory !== "all" || selectedTimeRange !== "all" || searchQuery) && (
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+            {/* Aktif Filtre Durumu */}
+            {(selectedCity !== "all" || selectedCategory !== "all" || selectedTimeRange !== "all" || searchQuery) && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
               <span className="text-sm font-medium text-gray-600">Aktif Filtreler:</span>
               {selectedCity !== "all" && (
                 <button
@@ -371,8 +411,9 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
               >
                 Tümünü Temizle
               </button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
