@@ -511,7 +511,7 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
                   <div className="border-t bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-2.5 text-center transition group-hover:from-emerald-600 group-hover:to-green-600">
                     <div className="flex items-center justify-center gap-2 text-white">
                       <TrendingUp className="h-3.5 w-3.5" />
-                      <span className="text-sm font-semibold">Teklif al</span>
+                      <span className="text-sm font-semibold">Teklif ver</span>
                       {job.bid_count > 0 && (
                         <span className="text-xs opacity-90">({job.bid_count})</span>
                       )}
