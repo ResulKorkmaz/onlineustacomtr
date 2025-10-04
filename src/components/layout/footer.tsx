@@ -16,20 +16,20 @@ export default function Footer() {
           <div>
             <h4 className="mb-4 font-semibold">Hızlı Linkler</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/about" className="text-gray-600 hover:text-sky-600">Hakkımızda</Link></li>
-              <li><Link href="/how-it-works" className="text-gray-600 hover:text-sky-600">Nasıl Çalışır?</Link></li>
-              <li><Link href="/categories" className="text-gray-600 hover:text-sky-600">Kategoriler</Link></li>
-              <li><Link href="/faq" className="text-gray-600 hover:text-sky-600">SSS</Link></li>
+              <li><Link href="/jobs" className="text-gray-600 hover:text-sky-600">İlanlar</Link></li>
+              <li><Link href="/signup" className="text-gray-600 hover:text-sky-600">Kayıt Ol</Link></li>
+              <li><Link href="/login" className="text-gray-600 hover:text-sky-600">Giriş Yap</Link></li>
+              <li><span className="text-gray-400 text-xs">Diğer sayfalar yakında...</span></li>
             </ul>
           </div>
 
           <div>
             <h4 className="mb-4 font-semibold">Yasal</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/legal/terms" className="text-gray-600 hover:text-sky-600">Kullanım Şartları</Link></li>
-              <li><Link href="/legal/privacy" className="text-gray-600 hover:text-sky-600">Gizlilik Politikası</Link></li>
-              <li><Link href="/legal/kvkk" className="text-gray-600 hover:text-sky-600">KVKK</Link></li>
-              <li><Link href="/contact" className="text-gray-600 hover:text-sky-600">İletişim</Link></li>
+              <li><span className="text-gray-400">Kullanım Şartları</span> <span className="text-xs text-gray-400">(Yakında)</span></li>
+              <li><span className="text-gray-400">Gizlilik Politikası</span> <span className="text-xs text-gray-400">(Yakında)</span></li>
+              <li><span className="text-gray-400">KVKK</span> <span className="text-xs text-gray-400">(Yakında)</span></li>
+              <li><span className="text-gray-400">İletişim</span> <span className="text-xs text-gray-400">(Yakında)</span></li>
             </ul>
           </div>
 
