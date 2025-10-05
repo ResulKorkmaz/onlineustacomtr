@@ -39,7 +39,40 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
     setLoading(true);
     setError("");
 
+    // Timeout: 15 saniye sonra hata göster
+    const timeoutId = setTimeout(() => {
+      console.error("[BidSubmit] Timeout! İşlem 15 saniyede tamamlanamadı");
+      setError("İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.");
+      setLoading(false);
+    }, 15000);
+
     try {
+      // Önce profil kontrolü
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, role")
+        .eq("id", userId)
+        .single();
+
+      console.log("[BidSubmit] Profile check:", { profile, profileError });
+
+      if (profileError || !profile) {
+        clearTimeout(timeoutId);
+        console.error("[BidSubmit] Profile not found!");
+        setError("Profiliniz bulunamadı. Lütfen çıkış yapıp tekrar giriş yapın.");
+        setLoading(false);
+        return;
+      }
+
+      if (profile.role !== "provider") {
+        clearTimeout(timeoutId);
+        console.error("[BidSubmit] User is not a provider!");
+        setError("Sadece hizmet verenler teklif verebilir.");
+        setLoading(false);
+        return;
+      }
+
+      // Teklif gönder
       const { data, error: submitError } = await supabase
         .from("bids")
         .insert({
@@ -50,11 +83,12 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
         })
         .select();
 
+      clearTimeout(timeoutId);
       console.log("[BidSubmit] Response:", { data, error: submitError });
 
       if (submitError) {
         console.error("[BidSubmit] Error:", submitError);
-        setError(submitError.message || "Teklif gönderilemedi");
+        setError(submitError.message || "Teklif gönderilemedi. Detay: " + JSON.stringify(submitError));
         setLoading(false);
         return;
       }
@@ -66,10 +100,13 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
       alert("Teklifiniz başarıyla gönderildi!");
       
       // Sayfayı yenile
-      window.location.reload();
-    } catch (err) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error("[BidSubmit] Exception:", err);
-      setError("Beklenmeyen bir hata oluştu");
+      setError("Hata: " + (err?.message || "Beklenmeyen bir hata oluştu"));
       setLoading(false);
     }
   }
