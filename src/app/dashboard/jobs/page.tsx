@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import DashboardJobsClient from "./client";
 
-export const revalidate = 30;
+export const revalidate = 0; // Her zaman güncel veri
 
 export default async function DashboardJobsPage() {
   const supabase = await createClient();
