@@ -62,9 +62,10 @@ interface Props {
   userCity?: string;
   allCategories?: string[];
   allCities?: string[];
+  providerBids?: number[];
 }
 
-export default function DashboardJobsClient({ jobs, isProvider, userCity, allCategories = [], allCities = [] }: Props) {
+export default function DashboardJobsClient({ jobs, isProvider, userCity, allCategories = [], allCities = [], providerBids = [] }: Props) {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [viewingBidsFor, setViewingBidsFor] = useState<Job | null>(null);
   const [bids, setBids] = useState<Bid[]>([]);
@@ -462,6 +463,15 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
                 key={job.id}
                 className="group relative overflow-hidden rounded-lg border bg-white transition hover:shadow-md hover:border-sky-300"
               >
+                {/* Teklif Verildi Badge - Sağ Üst */}
+                {providerBids.includes(job.id) && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white shadow-md">
+                      ✓ Teklif Verildi
+                    </span>
+                  </div>
+                )}
+                
                 <Link href={`/jobs/${job.id}`} className="block">
                   {/* Üst Kısım: Başlık + Açıklama */}
                   <div className="p-3 pb-2">

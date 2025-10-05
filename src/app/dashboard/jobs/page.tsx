@@ -26,6 +26,7 @@ export default async function DashboardJobsPage() {
   let jobs = [];
   let allCategories: string[] = [];
   let allCities: string[] = [];
+  let providerBids: number[] = []; // Teklif verilen ilan ID'leri
 
   if (profile.role === "provider") {
     // Provider için: TÜM AÇIK İLANLARI GETİR (filtreleme client-side yapılacak)
@@ -39,6 +40,14 @@ export default async function DashboardJobsPage() {
       .order("created_at", { ascending: false });
 
     jobs = data || [];
+
+    // Provider'ın verdiği teklifleri al
+    const { data: bidsData } = await supabase
+      .from("bids")
+      .select("job_id")
+      .eq("provider_id", user.id);
+
+    providerBids = bidsData?.map(b => b.job_id) || [];
 
     // Benzersiz kategoriler ve iller
     allCategories = [...new Set(jobs.map(j => j.category).filter(Boolean))];
@@ -61,6 +70,7 @@ export default async function DashboardJobsPage() {
       userCity={profile.city}
       allCategories={allCategories}
       allCities={allCities}
+      providerBids={providerBids}
     />
   );
 }
