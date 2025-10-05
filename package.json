@@ -2,11 +2,19 @@
   "name": "onlineusta.com.tr",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20 <21",
+    "npm": ">=10 <11"
+  },
+  "packageManager": "npm@10.x",
   "scripts": {
+    "preinstall": "corepack enable",
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'No tests yet' && exit 0",
     "db:types": "supabase gen types typescript --project-id zqvdnujpbbrwhnsylgmq > src/lib/types/database.types.ts",
     "db:reset": "supabase db reset",
     "db:migrate": "supabase migration up"
