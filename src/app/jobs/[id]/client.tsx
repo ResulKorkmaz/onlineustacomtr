@@ -43,16 +43,6 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
     setLoading(true);
     setError("");
 
-    // Timeout: 15 saniye sonra hata göster
-    const timeoutId = setTimeout(() => {
-      console.error("[BidSubmit] Timeout! İşlem 15 saniyede tamamlanamadı");
-      toast.error("İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.", {
-        duration: 4000,
-        position: "top-center",
-      });
-      setLoading(false);
-    }, 15000);
-
     try {
       // Önce profil kontrolü
       const { data: profile, error: profileError } = await supabase
@@ -64,7 +54,6 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
       console.log("[BidSubmit] Profile check:", { profile, profileError });
 
       if (profileError || !profile) {
-        clearTimeout(timeoutId);
         console.error("[BidSubmit] Profile not found!");
         toast.error("Profiliniz bulunamadı. Lütfen çıkış yapıp tekrar giriş yapın.", {
           duration: 4000,
@@ -75,7 +64,6 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
       }
 
       if (profile.role !== "provider") {
-        clearTimeout(timeoutId);
         console.error("[BidSubmit] User is not a provider!");
         toast.error("Sadece hizmet verenler teklif verebilir.", {
           duration: 4000,
@@ -86,6 +74,7 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
       }
 
       // Teklif gönder
+      console.log("[BidSubmit] Sending bid...");
       const { data, error: submitError } = await supabase
         .from("bids")
         .insert({
@@ -96,7 +85,6 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
         })
         .select();
 
-      clearTimeout(timeoutId);
       console.log("[BidSubmit] Response:", { data, error: submitError });
 
       if (submitError) {
@@ -135,8 +123,8 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
         window.location.reload();
       }, 1500);
     } catch (err: any) {
-      clearTimeout(timeoutId);
       console.error("[BidSubmit] Exception:", err);
+      console.error("[BidSubmit] Exception details:", JSON.stringify(err, null, 2));
       toast.error(err?.message || "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.", {
         duration: 4000,
         position: "top-center",
