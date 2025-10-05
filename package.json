@@ -6,7 +6,7 @@
     "node": ">=20 <25",
     "pnpm": ">=10 <11"
   },
-  "packageManager": "pnpm@10.x",
+  "packageManager": "pnpm@10.12.1",
   "scripts": {
     "preinstall": "corepack enable",
     "dev": "next dev --turbopack",
