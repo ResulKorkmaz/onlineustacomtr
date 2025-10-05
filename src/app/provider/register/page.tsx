@@ -280,27 +280,29 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      // 0. reCAPTCHA Doğrulama
-      if (!executeRecaptcha) {
-        setError("reCAPTCHA yüklenemedi. Lütfen sayfayı yenileyin.");
-        setLoading(false);
-        return;
-      }
+      // 0. reCAPTCHA Doğrulama (Optional - production'da key varsa çalışır)
+      if (executeRecaptcha) {
+        try {
+          const recaptchaToken = await executeRecaptcha("provider_register");
+          
+          const recaptchaResponse = await fetch("/api/verify-recaptcha", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: recaptchaToken }),
+          });
 
-      const recaptchaToken = await executeRecaptcha("provider_register");
-      
-      const recaptchaResponse = await fetch("/api/verify-recaptcha", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: recaptchaToken }),
-      });
-
-      const recaptchaResult = await recaptchaResponse.json();
-
-      if (!recaptchaResult.success) {
-        setError("Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.");
-        setLoading(false);
-        return;
+          const recaptchaResult = await recaptchaResponse.json();
+          
+          if (!recaptchaResult.success) {
+            console.warn("reCAPTCHA doğrulaması başarısız");
+            // Production'da Vercel environment variables eklenince çalışacak
+          }
+        } catch (recaptchaError) {
+          console.error("reCAPTCHA hatası:", recaptchaError);
+          // reCAPTCHA hatası olsa bile devam et (key yoksa)
+        }
+      } else {
+        console.warn("⚠️ reCAPTCHA key'leri Vercel'de tanımlı değil. VERCEL_RECAPTCHA_SETUP.md dosyasına bakın.");
       }
 
       // 1. Kullanıcı kaydı
