@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=20 <21",
-    "npm": ">=10 <11"
+    "node": ">=20 <25",
+    "pnpm": ">=10 <11"
   },
-  "packageManager": "npm@10.x",
+  "packageManager": "pnpm@10.x",
   "scripts": {
     "preinstall": "corepack enable",
     "dev": "next dev --turbopack",

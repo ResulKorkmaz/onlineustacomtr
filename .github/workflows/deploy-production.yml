@@ -24,7 +24,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: 📦 Install pnpm
-        run: corepack enable && pnpm --version
+        run: corepack enable pnpm@10.x && pnpm --version
 
       - name: 📦 Install dependencies
         run: pnpm i --frozen-lockfile
@@ -56,7 +56,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: 📦 Install pnpm
-        run: corepack enable && pnpm --version
+        run: corepack enable pnpm@10.x && pnpm --version
 
       - name: 📦 Install dependencies
         run: pnpm i --frozen-lockfile
