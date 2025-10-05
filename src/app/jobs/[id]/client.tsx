@@ -9,6 +9,7 @@ import { formatRelativeTime } from "@/lib/utils";
 import { MapPin, Calendar, DollarSign, Clock, Tag, User, MessageCircle, CheckCircle, TrendingUp } from "lucide-react";
 import type { Job, Bid } from "@/lib/types/database.types";
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 interface Props {
   job: Job;
@@ -30,7 +31,10 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
 
   async function handleSubmitBid() {
     if (!userId || !amount || !message) {
-      setError("Lütfen tüm alanları doldurun");
+      toast.error("Lütfen tüm alanları doldurun", {
+        duration: 3000,
+        position: "top-center",
+      });
       return;
     }
     
@@ -42,7 +46,10 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
     // Timeout: 15 saniye sonra hata göster
     const timeoutId = setTimeout(() => {
       console.error("[BidSubmit] Timeout! İşlem 15 saniyede tamamlanamadı");
-      setError("İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.");
+      toast.error("İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.", {
+        duration: 4000,
+        position: "top-center",
+      });
       setLoading(false);
     }, 15000);
 
@@ -59,7 +66,10 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
       if (profileError || !profile) {
         clearTimeout(timeoutId);
         console.error("[BidSubmit] Profile not found!");
-        setError("Profiliniz bulunamadı. Lütfen çıkış yapıp tekrar giriş yapın.");
+        toast.error("Profiliniz bulunamadı. Lütfen çıkış yapıp tekrar giriş yapın.", {
+          duration: 4000,
+          position: "top-center",
+        });
         setLoading(false);
         return;
       }
@@ -67,7 +77,10 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
       if (profile.role !== "provider") {
         clearTimeout(timeoutId);
         console.error("[BidSubmit] User is not a provider!");
-        setError("Sadece hizmet verenler teklif verebilir.");
+        toast.error("Sadece hizmet verenler teklif verebilir.", {
+          duration: 4000,
+          position: "top-center",
+        });
         setLoading(false);
         return;
       }
@@ -88,31 +101,55 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
 
       if (submitError) {
         console.error("[BidSubmit] Error:", submitError);
-        setError(submitError.message || "Teklif gönderilemedi. Detay: " + JSON.stringify(submitError));
+        toast.error(submitError.message || "Teklif gönderilemedi. Lütfen tekrar deneyin.", {
+          duration: 4000,
+          position: "top-center",
+        });
         setLoading(false);
         return;
       }
 
       console.log("[BidSubmit] Success!");
+      
+      // Modern toast notification
+      toast.success("Teklifiniz başarıyla gönderildi!", {
+        duration: 3000,
+        position: "top-center",
+        icon: "✅",
+        style: {
+          background: "#10b981",
+          color: "#fff",
+          padding: "16px",
+          borderRadius: "10px",
+          fontSize: "14px",
+          fontWeight: "600",
+        },
+      });
+      
       setAmount("");
       setMessage("");
       setShowBidForm(false);
-      alert("Teklifiniz başarıyla gönderildi!");
       
       // Sayfayı yenile
       setTimeout(() => {
         window.location.reload();
-      }, 500);
+      }, 1500);
     } catch (err: any) {
       clearTimeout(timeoutId);
       console.error("[BidSubmit] Exception:", err);
-      setError("Hata: " + (err?.message || "Beklenmeyen bir hata oluştu"));
+      toast.error(err?.message || "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.", {
+        duration: 4000,
+        position: "top-center",
+      });
       setLoading(false);
     }
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Toast Notification Container */}
+      <Toaster />
+      
       <div className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-4xl">
         
         {/* ==================== İLAN KARTI - MİNİMAL ==================== */}
