@@ -89,7 +89,9 @@ function LoginForm() {
 
     if (error) {
       // Kullanıcı dostu hata mesajları
-      if (error.message.includes("Invalid login credentials")) {
+      if (error.message.toLowerCase().includes("rate limit")) {
+        setError("Çok fazla giriş denemesi yaptınız. Lütfen 1-2 saat sonra tekrar deneyin. Bu güvenlik önlemi kötüye kullanımı engellemek içindir.");
+      } else if (error.message.includes("Invalid login credentials")) {
         setError("E-posta veya şifre hatalı. Eğer yeni kayıt olduysanız, lütfen e-postanızdaki onay linkine tıklayın.");
       } else if (error.message.includes("Email not confirmed")) {
         setError("E-posta adresiniz henüz onaylanmamış. Lütfen gelen kutunuzu kontrol edin.");

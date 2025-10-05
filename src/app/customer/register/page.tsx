@@ -161,7 +161,19 @@ export default function CustomerRegisterPage() {
         },
       });
 
-      if (authError) throw authError;
+      // Auth hata kontrolü - Rate limit ve diğer hatalar için kullanıcı dostu mesajlar
+      if (authError) {
+        if (authError.message.toLowerCase().includes("rate limit")) {
+          throw new Error(
+            "Çok fazla kayıt denemesi yaptınız. Lütfen 1-2 saat sonra tekrar deneyin. " +
+            "Bu güvenlik önlemi kötüye kullanımı engellemek içindir."
+          );
+        } else if (authError.message.toLowerCase().includes("already registered")) {
+          throw new Error("Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapın veya farklı bir e-posta kullanın.");
+        } else {
+          throw new Error(authError.message || "Kayıt sırasında bir hata oluştu");
+        }
+      }
       if (!authData.user) throw new Error("Kullanıcı oluşturulamadı");
 
       // Email confirmation durumunu kontrol et
