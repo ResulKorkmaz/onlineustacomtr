@@ -436,7 +436,7 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
           </div>
           <p className="text-lg font-medium text-gray-900">
             {isProvider 
-              ? `${city} ilinde henüz aktif ilan bulunmuyor` 
+               ? `Henüz aktif ilan bulunmuyor`
               : "Henüz ilan oluşturmadınız"}
           </p>
           <p className="mt-2 text-sm text-gray-500">

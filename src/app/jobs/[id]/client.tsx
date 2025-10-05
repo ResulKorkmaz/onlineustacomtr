@@ -122,10 +122,10 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
       setTimeout(() => {
         window.location.reload();
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[BidSubmit] Exception:", err);
       console.error("[BidSubmit] Exception details:", JSON.stringify(err, null, 2));
-      toast.error(err?.message || "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.", {
+      toast.error((err as Error)?.message || "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.", {
         duration: 4000,
         position: "top-center",
       });
