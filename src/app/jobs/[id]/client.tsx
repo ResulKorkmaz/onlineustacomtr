@@ -117,7 +117,7 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
         position: "top-center",
         icon: "✅",
         style: {
-          background: "#10b981",
+          background: "#0ea5e9",
           color: "#fff",
           padding: "16px",
           borderRadius: "10px",
@@ -219,7 +219,7 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
             {!isOwner && !hasBid && (
               <button
                 onClick={() => setShowBidForm(!showBidForm)}
-                className="w-full mt-3 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-green-500 px-4 py-3 text-sm font-semibold text-white transition hover:from-emerald-600 hover:to-green-600"
+                className="w-full mt-3 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white transition hover:from-sky-600 hover:to-blue-600"
               >
                 <TrendingUp className="h-4 w-4" />
                 {showBidForm ? "Formu Kapat" : "Teklif Ver"}
@@ -228,12 +228,12 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
 
             {/* Teklif Verildi Mesajı */}
             {!isOwner && hasBid && (
-              <div className="mt-3 rounded-lg bg-green-50 border border-green-200 p-3">
+              <div className="mt-3 rounded-lg bg-sky-50 border border-sky-200 p-3">
                 <div className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="h-5 w-5 text-sky-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-green-900">Teklifiniz gönderildi</p>
-                    <p className="text-xs text-green-700 mt-1">Teklifiniz: ₺{bids[0].amount.toLocaleString('tr-TR')}</p>
+                    <p className="text-sm font-medium text-sky-900">Teklifiniz gönderildi</p>
+                    <p className="text-xs text-sky-700 mt-1">Teklifiniz: ₺{bids[0].amount.toLocaleString('tr-TR')}</p>
                   </div>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
               <Button
                 onClick={handleSubmitBid}
                 disabled={loading}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-sm"
+                className="w-full bg-sky-600 hover:bg-sky-700 text-sm"
               >
                 {loading ? "Gönderiliyor..." : "Teklifi Gönder"}
               </Button>
@@ -315,7 +315,7 @@ export default function JobDetailClient({ job, bids, userId }: Props) {
                           <p className="text-xs text-gray-500">{formatRelativeTime(bid.created_at)}</p>
                         </div>
                       </div>
-                      <p className="text-lg font-bold text-emerald-600">₺{bid.amount.toLocaleString('tr-TR')}</p>
+                      <p className="text-lg font-bold text-sky-600">₺{bid.amount.toLocaleString('tr-TR')}</p>
                     </div>
                     <p className="text-sm text-gray-700 leading-relaxed">{bid.message}</p>
                   </div>

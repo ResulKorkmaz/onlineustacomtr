@@ -466,7 +466,7 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
                 {/* Teklif Verildi Badge - Sağ Üst */}
                 {providerBids.includes(job.id) && (
                   <div className="absolute top-2 right-2 z-10">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white shadow-md">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-sky-500 px-2.5 py-1 text-xs font-semibold text-white shadow-md">
                       ✓ Teklif Verildi
                     </span>
                   </div>
@@ -514,17 +514,22 @@ export default function DashboardJobsClient({ jobs, isProvider, userCity, allCat
                           <span className="truncate">{formatRelativeTime(job.created_at)}</span>
                         </div>
                       </div>
+                      
+                      {/* 3. Satır: Teklif Sayısı */}
+                      <div className="flex items-center gap-1 pt-1 border-t text-[11px]">
+                        <MessageCircle className="h-3 w-3 text-sky-500 flex-shrink-0" />
+                        <span className="font-medium text-sky-600">
+                          {job.bid_count === 0 ? "Henüz teklif yok" : `${job.bid_count} teklif var`}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Alt Kısım: Teklif Ver Butonu */}
-                  <div className="border-t bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-2.5 text-center transition group-hover:from-emerald-600 group-hover:to-green-600">
+                  <div className="border-t bg-gradient-to-r from-sky-500 to-blue-500 px-3 py-2.5 text-center transition group-hover:from-sky-600 group-hover:to-blue-600">
                     <div className="flex items-center justify-center gap-2 text-white">
                       <TrendingUp className="h-3.5 w-3.5" />
                       <span className="text-sm font-semibold">Teklif ver</span>
-                      {job.bid_count > 0 && (
-                        <span className="text-xs opacity-90">({job.bid_count})</span>
-                      )}
                     </div>
                   </div>
                 </Link>
