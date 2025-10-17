@@ -326,6 +326,11 @@ export default function RegisterPage() {
           );
         } else if (authError.message.toLowerCase().includes("already registered")) {
           throw new Error("Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapın veya farklı bir e-posta kullanın.");
+        } else if (authError.message.toLowerCase().includes("data breach") || authError.message.toLowerCase().includes("compromised")) {
+          throw new Error(
+            "Bu şifre güvenlik açığı olan veritabanlarında tespit edilmiş. Güvenliğiniz için lütfen daha güvenli bir şifre seçin. " +
+            "Öneriler: En az 8 karakter, büyük/küçük harf, rakam ve özel karakter içeren bir şifre kullanın."
+          );
         } else {
           throw new Error(authError.message || "Kayıt sırasında bir hata oluştu");
         }
